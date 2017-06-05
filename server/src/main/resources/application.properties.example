@@ -1,0 +1,7 @@
+spring.datasource.driverClassName=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/textchat
+spring.datasource.username=textchat
+spring.datasource.password=
+spring.jpa.show-sql=true
+twilio.accountSid=abc123
+twilio.authToken=def456
