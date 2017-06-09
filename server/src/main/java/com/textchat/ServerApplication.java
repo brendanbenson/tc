@@ -23,7 +23,8 @@ public class ServerApplication {
             public void addCorsMappings(CorsRegistry registry) {
                 registry
                         .addMapping("/*")
-                        .allowedOrigins("*");
+                        .allowedOrigins("*")
+                        .allowedMethods("GET", "HEAD", "POST", "PUT");
             }
         };
     }

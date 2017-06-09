@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (href, placeholder, type_)
 import Html.Events exposing (..)
-import Http exposing (jsonBody)
+import Http exposing (Body, Request, expectStringResponse, jsonBody, request)
 import Json.Decode exposing (Decoder, decodeString, field, list, map2, maybe, oneOf, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode
@@ -54,7 +54,7 @@ type Msg
     | StartAliasing
     | InputAlias String
     | SubmitAlias
-    | SubmittedAlias (Result Http.Error Bool)
+    | SubmittedAlias (Result Http.Error ())
 
 
 type TextMessageResponse
@@ -101,26 +101,29 @@ update msg model =
             ( model, Cmd.none )
 
 
-type alias AliasRequest =
-    { label : String, phoneNumber : String }
-
-
 submitAlias : Model -> Cmd Msg
 submitAlias model =
     let
         url =
-            "http://localhost:8080/aliases"
+            "http://localhost:8080/contacts"
 
-        requestBody =
-            AliasRequest model.alias_ (withDefault "" model.currentPhoneNumber)
-
-        request =
-            Http.post
-                url
-                (jsonBody (Json.Encode.object [ ( "label", Json.Encode.string model.alias_ ), ( "phoneNumber", Json.Encode.string (withDefault "" model.currentPhoneNumber) ) ]))
-                (Json.Decode.null True)
+        body =
+            (jsonBody (Json.Encode.object [ ( "label", Json.Encode.string model.alias_ ), ( "phoneNumber", Json.Encode.string (withDefault "" model.currentPhoneNumber) ) ]))
     in
-        Http.send SubmittedAlias request
+        Http.send SubmittedAlias (put url body)
+
+
+put : String -> Body -> Request ()
+put url body =
+    request
+        { method = "PUT"
+        , headers = []
+        , url = url
+        , body = body
+        , expect = expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 decodeTextMessageResponse : String -> TextMessageResponse
@@ -187,14 +190,7 @@ threadSummary textMessage =
 
 messageView : TextMessage -> Html Msg
 messageView textMessage =
-    div []
-        [ div []
-            [ a [ onClick (SetCurrentPhoneNumber textMessage.toPhoneNumber) ]
-                [ text textMessage.toPhoneNumber
-                ]
-            ]
-        , div [] [ text textMessage.body ]
-        ]
+    div [] [ text textMessage.body ]
 
 
 threadView : Model -> Html Msg

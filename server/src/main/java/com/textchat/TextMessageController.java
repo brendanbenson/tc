@@ -1,5 +1,7 @@
 package com.textchat;
 
+import com.textchat.persistence.contacts.Contact;
+import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.persistence.textmessages.TextMessageRepository;
 import com.textchat.persistence.textmessages.TextMessageRow;
 import com.textchat.textmessages.TextMessage;
@@ -19,14 +21,17 @@ import java.util.List;
 public class TextMessageController {
     private TextMessageGateway textMessageGateway;
     private TextMessageRepository textMessageRepository;
+    private ContactRepository contactRepository;
 
     @Autowired
     public TextMessageController(
             TextMessageGateway textMessageGateway,
-            TextMessageRepository textMessageRepository
+            TextMessageRepository textMessageRepository,
+            ContactRepository contactRepository
     ) {
         this.textMessageGateway = textMessageGateway;
         this.textMessageRepository = textMessageRepository;
+        this.contactRepository = contactRepository;
     }
 
     @SubscribeMapping("/text-messages")
@@ -51,7 +56,19 @@ public class TextMessageController {
     public TextMessageResponse sendMessage(@RequestBody SendMessageRequest sendMessageRequest) {
         String fromPhoneNumber = "+12486004432";
 
-        TextMessageRow textMessageRow = new TextMessageRow(sendMessageRequest.getBody(), sendMessageRequest.getToPhoneNumber(), fromPhoneNumber);
+        Contact fromContact = contactRepository.findByPhoneNumber(fromPhoneNumber);
+
+        if (fromContact == null) {
+            fromContact = contactRepository.save(new Contact(fromPhoneNumber, ""));
+        }
+
+        Contact toContact = contactRepository.findByPhoneNumber(sendMessageRequest.toPhoneNumber);
+
+        if (toContact == null) {
+            toContact = contactRepository.save(new Contact(sendMessageRequest.toPhoneNumber, ""));
+        }
+
+        TextMessageRow textMessageRow = new TextMessageRow(sendMessageRequest.getBody(), toContact, fromContact);
 
         textMessageRepository.save(textMessageRow);
 
@@ -78,16 +95,19 @@ public class TextMessageController {
     private static class TextMessageResponse {
         private String body;
         private String toPhoneNumber;
+        private String toLabel;
 
-        public TextMessageResponse(String body, String toPhoneNumber) {
+        public TextMessageResponse(String body, String toPhoneNumber, String toLabel) {
             this.body = body;
             this.toPhoneNumber = toPhoneNumber;
+            this.toLabel = toLabel;
         }
 
         public static TextMessageResponse fromTextMessageRow(TextMessageRow textMessageRow) {
             return new TextMessageResponse(
                     textMessageRow.getBody(),
-                    textMessageRow.getToPhoneNumber()
+                    textMessageRow.getToPhoneNumber(),
+                    textMessageRow.getToLabel()
             );
         }
 
@@ -97,6 +117,10 @@ public class TextMessageController {
 
         public String getToPhoneNumber() {
             return toPhoneNumber;
+        }
+
+        public String getToLabel() {
+            return toLabel;
         }
 
         @Override
