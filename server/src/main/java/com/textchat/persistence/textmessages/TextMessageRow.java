@@ -49,11 +49,11 @@ public class TextMessageRow {
         return deliveredAt;
     }
 
-    public String getToPhoneNumber() {
-        return this.toContact.getPhoneNumber();
+    public Contact getToContact() {
+        return toContact;
     }
 
-    public String getToLabel() {
-        return this.toContact.getLabel();
+    public Contact getFromContact() {
+        return fromContact;
     }
 }

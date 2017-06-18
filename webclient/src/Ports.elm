@@ -1,9 +1,16 @@
 port module Ports exposing (..)
 
-import Models exposing (TextMessage)
+
+type alias TextMessageRequest =
+    { body : String
+    , toPhoneNumber : String
+    }
 
 
-port sendTextMessage : TextMessage -> Cmd msg
+port sendTextMessage : TextMessageRequest -> Cmd msg
 
 
 port receiveTextMessages : (String -> msg) -> Sub msg
+
+
+port setAuthToken : Maybe String -> Cmd msg

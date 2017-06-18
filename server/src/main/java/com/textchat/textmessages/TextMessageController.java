@@ -1,12 +1,12 @@
-package com.textchat;
+package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.persistence.textmessages.TextMessageRepository;
 import com.textchat.persistence.textmessages.TextMessageRow;
-import com.textchat.textmessages.TextMessage;
-import com.textchat.textmessages.TextMessageGateway;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
@@ -14,8 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @Controller
 public class TextMessageController {
@@ -36,24 +38,23 @@ public class TextMessageController {
 
     @SubscribeMapping("/text-messages")
     public List<TextMessageResponse> getMessages() {
-        Iterable<TextMessageRow> textMessageRows = textMessageRepository.findAll();
+        Iterable<TextMessageRow> textMessageRows = textMessageRepository.findLatestThreads();
 
         ArrayList<TextMessageResponse> textMessageResponses = new ArrayList<>();
 
-        Iterator<TextMessageRow> iterator = textMessageRows.iterator();
-
-        iterator.forEachRemaining(textMessageRow -> {
-            TextMessageResponse textMessageResponse = TextMessageResponse.fromTextMessageRow(textMessageRow);
+        for (TextMessageRow textMessageRow : textMessageRows) {
+            TextMessageResponse textMessageResponse = new TextMessageResponse(textMessageRow);
             textMessageResponses.add(textMessageResponse);
-        });
+        }
 
+        // TODO: normalize the data (return a list of textmessages with contact ids and a list of the corresponding contacts)
         return textMessageResponses;
     }
 
     // To make the channels dynamic, see: https://stackoverflow.com/questions/27047310/path-variables-in-spring-websockets-sendto-mapping
     @MessageMapping("/create-text-message")
     @SendTo("/text-messages")
-    public TextMessageResponse sendMessage(@RequestBody SendMessageRequest sendMessageRequest) {
+    public List<TextMessageResponse> sendMessage(@RequestBody SendMessageRequest sendMessageRequest) {
         String fromPhoneNumber = "+12486004432";
 
         Contact fromContact = contactRepository.findByPhoneNumber(fromPhoneNumber);
@@ -76,7 +77,7 @@ public class TextMessageController {
 
         textMessageGateway.send(textMessage);
 
-        return TextMessageResponse.fromTextMessageRow(textMessageRow);
+        return singletonList(new TextMessageResponse(textMessageRow));
     }
 
     private static class SendMessageRequest {
@@ -89,56 +90,6 @@ public class TextMessageController {
 
         public String getToPhoneNumber() {
             return toPhoneNumber;
-        }
-    }
-
-    private static class TextMessageResponse {
-        private String body;
-        private String toPhoneNumber;
-        private String toLabel;
-
-        public TextMessageResponse(String body, String toPhoneNumber, String toLabel) {
-            this.body = body;
-            this.toPhoneNumber = toPhoneNumber;
-            this.toLabel = toLabel;
-        }
-
-        public static TextMessageResponse fromTextMessageRow(TextMessageRow textMessageRow) {
-            return new TextMessageResponse(
-                    textMessageRow.getBody(),
-                    textMessageRow.getToPhoneNumber(),
-                    textMessageRow.getToLabel()
-            );
-        }
-
-        public String getBody() {
-            return body;
-        }
-
-        public String getToPhoneNumber() {
-            return toPhoneNumber;
-        }
-
-        public String getToLabel() {
-            return toLabel;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            TextMessageResponse that = (TextMessageResponse) o;
-
-            if (body != null ? !body.equals(that.body) : that.body != null) return false;
-            return toPhoneNumber != null ? toPhoneNumber.equals(that.toPhoneNumber) : that.toPhoneNumber == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = body != null ? body.hashCode() : 0;
-            result = 31 * result + (toPhoneNumber != null ? toPhoneNumber.hashCode() : 0);
-            return result;
         }
     }
 }
