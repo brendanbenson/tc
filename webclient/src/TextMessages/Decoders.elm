@@ -1,8 +1,9 @@
-module TextMessages.Decoders exposing (decodeTextMessageResponse, decodeTextMessageList)
+module TextMessages.Decoders exposing (..)
 
-import Json.Decode exposing (Decoder, decodeString, int, list, maybe, string)
+import Contacts.Decoders exposing (decodeContact)
+import Json.Decode exposing (Decoder, bool, decodeString, int, list, maybe, string)
 import Json.Decode.Pipeline exposing (decode, required)
-import Models exposing (Contact, TextMessage)
+import TextMessages.Models exposing (TextMessage)
 
 
 decodeTextMessageResponse : String -> List TextMessage
@@ -25,13 +26,6 @@ decodeTextMessage =
     decode TextMessage
         |> required "id" int
         |> required "body" string
+        |> required "incoming" bool
         |> required "toContact" decodeContact
         |> required "fromContact" decodeContact
-
-
-decodeContact : Decoder Contact
-decodeContact =
-    decode Contact
-        |> required "id" int
-        |> required "phoneNumber" string
-        |> required "label" string

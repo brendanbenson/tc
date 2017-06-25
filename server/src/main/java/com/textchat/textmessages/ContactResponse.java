@@ -2,7 +2,7 @@ package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
 
-class ContactResponse {
+public class ContactResponse {
     private Long id;
     private String phoneNumber;
     private String label;

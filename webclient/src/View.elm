@@ -3,7 +3,7 @@ module View exposing (..)
 import Authentication.Login
 import Html exposing (Html)
 import Messages exposing (Msg)
-import Models exposing (Model, TextMessage)
+import Models exposing (Model)
 import NotFound
 import Routing exposing (Route(..))
 import TextMessages.Dashboard

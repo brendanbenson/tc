@@ -1,0 +1,116 @@
+body{
+  margin: 0;
+  line-height: 1.5;
+  padding: 0;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 300;
+  font-size: 0.8rem;
+  color: $content;
+}
+
+h1,
+h2,
+strong {
+  color: $content;
+  font-weight: 300;
+}
+
+a {
+  color: $flair;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+a:hover {
+  color: $primary-activate;
+  text-decoration: none;
+}
+
+.dashboard {
+  display: flex;
+}
+
+header {
+  width: 100%;
+  background-color: $scuba;
+  padding: 0.8em 3em;
+
+  h1 {
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    font-size: 1.5rem;
+    color: $simple;
+  }
+}
+
+.latest-messages-container {
+  width: 18em;
+  border-right: 1px solid $simple-content;
+  height: 100vh;
+
+  h2 {
+    background-color: $simple;
+    margin: 0;
+    padding: 0.2em 1em;
+    font-size: 1em;
+  }
+}
+
+.thread-summary {
+  padding: 0.5em 1em;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $simple;
+  }
+
+  .thread-summary-title {
+    color: $flair;
+    font-weight: 400;
+    font-size: 0.9rem;
+  }
+}
+
+.all-threads-container {
+  flex: 1;
+}
+
+.thread {
+  margin: .5em;
+  padding: 1em;
+  border: 1px solid $simple-content;
+  height: 400px;
+  overflow: scroll;
+  box-shadow: 2px 2px 2px $simple;
+  min-width: 260px;
+  width: 260px;
+  display: inline-block;
+
+  .message-bubble {
+    margin: 1em;
+    padding: 1em;
+    background-color: $simple;
+    border-radius: .5em;
+  }
+}
+
+button {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  padding: 0.4em;
+  margin: 0.4em;
+  border: 1px solid #EEE;
+  background-color: #FFF;
+  font-size: 14px;
+  color: #e81c4f;
+  cursor: pointer;
+}
+
+button:hover, button:focus {
+  color: #cb1c4f;
+  border: 1px solid #DDD;
+}
+
+*:focus {
+  outline: none;
+}

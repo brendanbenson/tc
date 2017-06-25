@@ -1,6 +1,6 @@
 package com.textchat.twilio;
 
-import com.textchat.textmessages.TextMessage;
+import com.textchat.persistence.textmessages.TextMessage;
 import com.textchat.textmessages.TextMessageGateway;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;

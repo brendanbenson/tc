@@ -19,6 +19,19 @@ put authToken url body =
         }
 
 
+post : AuthToken -> String -> Body -> Json.Decode.Decoder a -> Request a
+post authToken url body decoder =
+    request
+        { method = "POST"
+        , headers = [ authHeader authToken ]
+        , url = url
+        , body = body
+        , expect = expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
 get : AuthToken -> String -> Json.Decode.Decoder a -> Request a
 get authToken url decoder =
     request

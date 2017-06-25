@@ -1,29 +1,32 @@
 package com.textchat.textmessages;
 
-import com.textchat.persistence.textmessages.TextMessageRow;
+import com.textchat.persistence.textmessages.TextMessage;
 
 class TextMessageResponse {
     private Long id;
     private String body;
+    private Boolean incoming;
     private ContactResponse toContact;
     private ContactResponse fromContact;
 
     public TextMessageResponse() {
     }
 
-    public TextMessageResponse(Long id, String body, ContactResponse toContact, ContactResponse fromContact) {
+    public TextMessageResponse(Long id, String body, Boolean incoming, ContactResponse toContact, ContactResponse fromContact) {
         this.id = id;
         this.body = body;
+        this.incoming = incoming;
         this.toContact = toContact;
         this.fromContact = fromContact;
     }
 
-    public TextMessageResponse(TextMessageRow textMessageRow) {
+    public TextMessageResponse(TextMessage textMessage) {
         this(
-                textMessageRow.getId(),
-                textMessageRow.getBody(),
-                new ContactResponse(textMessageRow.getToContact()),
-                new ContactResponse(textMessageRow.getFromContact())
+                textMessage.getId(),
+                textMessage.getBody(),
+                textMessage.getIncoming(),
+                new ContactResponse(textMessage.getToContact()),
+                new ContactResponse(textMessage.getFromContact())
         );
     }
 
@@ -33,6 +36,10 @@ class TextMessageResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public Boolean getIncoming() {
+        return incoming;
     }
 
     public ContactResponse getToContact() {
@@ -52,6 +59,7 @@ class TextMessageResponse {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (body != null ? !body.equals(that.body) : that.body != null) return false;
+        if (incoming != null ? !incoming.equals(that.incoming) : that.incoming != null) return false;
         if (toContact != null ? !toContact.equals(that.toContact) : that.toContact != null) return false;
         return fromContact != null ? fromContact.equals(that.fromContact) : that.fromContact == null;
     }
@@ -60,6 +68,7 @@ class TextMessageResponse {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (body != null ? body.hashCode() : 0);
+        result = 31 * result + (incoming != null ? incoming.hashCode() : 0);
         result = 31 * result + (toContact != null ? toContact.hashCode() : 0);
         result = 31 * result + (fromContact != null ? fromContact.hashCode() : 0);
         return result;

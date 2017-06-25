@@ -78,6 +78,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/realtime/**").permitAll()
+                .antMatchers("/receive-sms/**").permitAll()
                 .anyRequest().authenticated();
 
         // Custom JWT based authentication

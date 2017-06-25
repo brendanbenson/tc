@@ -7,11 +7,12 @@ import java.util.Date;
 
 @Entity
 @Table(name = "text_messages")
-public class TextMessageRow {
+public class TextMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String body;
+    private Boolean incoming;
     @Column(updatable = false, insertable = false)
     private Date createdAt;
     private Date deliveredAt;
@@ -24,11 +25,17 @@ public class TextMessageRow {
     @JoinColumn(name = "from_contact_id", referencedColumnName = "id")
     private Contact fromContact;
 
-    public TextMessageRow() {
+    public TextMessage() {
     }
 
-    public TextMessageRow(String body, Contact toContact, Contact fromContact) {
+    public TextMessage(
+            String body,
+            Boolean incoming,
+            Contact toContact,
+            Contact fromContact
+    ) {
         this.body = body;
+        this.incoming = incoming;
         this.toContact = toContact;
         this.fromContact = fromContact;
     }
@@ -39,6 +46,10 @@ public class TextMessageRow {
 
     public String getBody() {
         return body;
+    }
+
+    public Boolean getIncoming() {
+        return incoming;
     }
 
     public Date getCreatedAt() {
@@ -55,5 +66,17 @@ public class TextMessageRow {
 
     public Contact getFromContact() {
         return fromContact;
+    }
+
+    public String getToPhoneNumber() {
+        return getToContact().getPhoneNumber();
+    }
+
+    public String getFromPhoneNumber() {
+        return getFromContact().getPhoneNumber();
+    }
+
+    public void setDeliveredAt(Date deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 }

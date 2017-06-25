@@ -1,5 +1,7 @@
 port module Ports exposing (..)
 
+import Json.Encode
+
 
 type alias TextMessageRequest =
     { body : String
@@ -7,10 +9,13 @@ type alias TextMessageRequest =
     }
 
 
-port sendTextMessage : TextMessageRequest -> Cmd msg
+port subscribeToTextMessages : () -> Cmd msg
 
 
 port receiveTextMessages : (String -> msg) -> Sub msg
 
 
-port setAuthToken : Maybe String -> Cmd msg
+port saveAuthToken : Maybe String -> Cmd msg
+
+
+port saveOpenThreads : Json.Encode.Value -> Cmd msg

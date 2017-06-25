@@ -1,14 +1,15 @@
 module Models exposing (..)
 
 import Authentication.AuthToken exposing (AuthToken)
+import Contacts.Models exposing (Recipient)
 import Dict exposing (Dict)
 import Routing exposing (Route)
-import Set exposing (Set)
+import TextMessages.Models exposing (TextMessage)
 
 
 type alias Model =
-    { body : String
-    , contacts : Dict ContactId Contact
+    { contacts : Dict ContactId Contact
+    , contactSuggestions : List ContactId
     , toPhoneNumber : String
     , messages : List TextMessage
     , openThreads : List ThreadState
@@ -25,14 +26,6 @@ type alias Uid =
     Int
 
 
-type alias TextMessage =
-    { id : Int
-    , body : String
-    , toContact : Contact
-    , fromContact : Contact
-    }
-
-
 type alias Contact =
     { id : ContactId
     , phoneNumber : String
@@ -41,15 +34,15 @@ type alias Contact =
 
 
 type alias ThreadState =
-    { contactId : ContactId
+    { to : Recipient
     , uid : Uid
     , draftMessage : String
     }
 
 
-newThreadState : ContactId -> Uid -> ThreadState
-newThreadState contactId uid =
-    { contactId = contactId
+newThreadState : Recipient -> Uid -> ThreadState
+newThreadState recipient uid =
+    { to = recipient
     , uid = uid
     , draftMessage = ""
     }
