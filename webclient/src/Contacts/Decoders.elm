@@ -1,8 +1,8 @@
 module Contacts.Decoders exposing (..)
 
+import Contacts.Models exposing (Contact)
 import Json.Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (decode, required)
-import Models exposing (Contact)
 
 
 decodeContactList : Decoder (List Contact)

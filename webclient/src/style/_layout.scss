@@ -1,4 +1,4 @@
-body{
+body {
   margin: 0;
   line-height: 1.5;
   padding: 0;
@@ -15,6 +15,17 @@ strong {
   font-weight: 300;
 }
 
+h2 {
+  font-size: 1.5em;
+}
+
+.section-break {
+  background-color: $simple;
+  margin: 0;
+  padding: 0.2em 1em;
+  font-size: 1em;
+}
+
 a {
   color: $flair;
   cursor: pointer;
@@ -26,34 +37,45 @@ a:hover {
   text-decoration: none;
 }
 
-.dashboard {
+.main {
+  height: 100vh;
   display: flex;
-}
+  flex-direction: column;
 
-header {
-  width: 100%;
-  background-color: $scuba;
-  padding: 0.8em 3em;
+  header {
+    flex: 0 1 auto;
+    background-color: $scuba;
+    padding: 0.8em 3em;
 
-  h1 {
-    margin: 0;
-    padding: 0;
-    cursor: default;
-    font-size: 1.5rem;
-    color: $simple;
+    h1 {
+      margin: 0;
+      padding: 0;
+      cursor: default;
+      font-size: 1.5rem;
+      color: $simple;
+    }
+  }
+
+  .dashboard {
+    flex: 1 1 auto;
+    display: flex;
   }
 }
 
 .latest-messages-container {
-  width: 18em;
+  flex: 0 1 18em;
+  display: flex;
+  flex-direction: column;
   border-right: 1px solid $simple-content;
-  height: 100vh;
+  min-width: 18em;
 
-  h2 {
-    background-color: $simple;
-    margin: 0;
-    padding: 0.2em 1em;
-    font-size: 1em;
+  .latest-messages-header {
+    flex: 0 1 auto;
+  }
+
+  .latest-messages-content {
+    flex: 1 1 auto;
+    overflow: scroll;
   }
 }
 
@@ -72,45 +94,73 @@ header {
   }
 }
 
-.all-threads-container {
-  flex: 1;
+.thread-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+
+  .thread-title {
+    flex: 0 1 auto;
+    border-bottom: 1px solid $simple-content;
+
+    h2 {
+      padding: 0.7em 1em;
+    }
+  }
+
+  .thread-content {
+    flex: 1 1 auto;
+    display: flex;
+
+    .thread-messages-pane {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid $simple-content;
+
+      .thread-body {
+        flex: 1 1 auto;
+        overflow: scroll;
+        border-bottom: 1px solid $simple-content;
+      }
+
+      .thread-footer {
+        flex: 0 1 8em;
+
+        .input-container {
+          padding: 1em;
+        }
+      }
+    }
+
+    .thread-contact-pane {
+      flex: 0 1 18em;
+      min-width: 18em;
+    }
+  }
+
 }
 
-.thread {
-  margin: .5em;
-  padding: 1em;
-  border: 1px solid $simple-content;
-  height: 400px;
-  overflow: scroll;
-  box-shadow: 2px 2px 2px $simple;
-  min-width: 260px;
-  width: 260px;
-  display: inline-block;
+.message-bubble {
+  margin: .5em 1em;
+  padding: .5em 1em;
+  background-color: $simple;
+  border-radius: 1.5em;
+  width: auto;
+  clear: both;
+  float: left;
 
-  .message-bubble {
-    margin: 1em;
-    padding: 1em;
-    background-color: $simple;
-    border-radius: .5em;
+  &.outgoing {
+    background-color: $scuba;
+    color: $simple;
+    float: right;
   }
 }
 
-button {
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-  padding: 0.4em;
-  margin: 0.4em;
-  border: 1px solid #EEE;
-  background-color: #FFF;
-  font-size: 14px;
-  color: #e81c4f;
-  cursor: pointer;
+.message-input {
+  width: 100%;
 }
 
-button:hover, button:focus {
-  color: #cb1c4f;
-  border: 1px solid #DDD;
-}
-
-*:focus {
-  outline: none;
+.new-message {
+  padding: 1em;
 }

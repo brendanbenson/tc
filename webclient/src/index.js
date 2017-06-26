@@ -13,8 +13,7 @@ var AUTH_TOKEN_KEY = 'authToken', OPEN_THREADS_KEY = 'openThreads';
 
 // .embed() can take an optional second argument. This would be an object describing the data we need to start a program, i.e. a userID or some token
 var app = Elm.Main.embed(mountNode, {
-    authToken: localStorage.getItem(AUTH_TOKEN_KEY),
-    openThreads: localStorage.getItem(OPEN_THREADS_KEY) || '[]'
+    authToken: localStorage.getItem(AUTH_TOKEN_KEY)
 });
 
 require('./stomp');
@@ -35,10 +34,6 @@ app.ports.subscribeToTextMessages.subscribe(function () {
 
 app.ports.saveAuthToken.subscribe(function (authToken) {
     localStorage.setItem(AUTH_TOKEN_KEY, authToken);
-});
-
-app.ports.saveOpenThreads.subscribe(function (openThreads) {
-    localStorage.setItem(OPEN_THREADS_KEY, JSON.stringify(openThreads));
 });
 
 require('./style/base.scss');

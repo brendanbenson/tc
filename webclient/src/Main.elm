@@ -1,20 +1,16 @@
 module Main exposing (..)
 
-import Contacts.Models exposing (ContactId, Recipient(KnownContact))
-import Debug exposing (log)
-import Decoders exposing (threadStatesDecoder)
 import Dict
-import Json.Decode
 import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState)
+import Models exposing (Model, ThreadState, Workflow(NewContact), newThreadState)
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(..), newUrl, parseLocation)
+import Routing exposing (Route(..), newUrl)
 import Update exposing (update)
 import View exposing (view)
 import Platform.Cmd exposing (Cmd)
-import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact)
+import TextMessages.Api exposing (fetchLatestThreads, fetchLatestThreads, fetchListForContact)
 
 
 main : Program Flags Model Msg
@@ -27,31 +23,27 @@ main =
         }
 
 
-initialModel : Maybe String -> List ThreadState -> Route -> Model
-initialModel authToken openThreads route =
+initialModel : Maybe String -> Route -> Model
+initialModel authToken route =
     { toPhoneNumber = ""
     , messages = []
     , contactSuggestions = []
-    , openThreads = openThreads
+    , workflow = NewContact
     , contacts = Dict.empty
     , username = ""
     , password = ""
     , authToken = authToken
     , authError = False
     , route = route
-
-    -- Ensure no UID conflicts from previously-stored threads
-    , uid = (+) 1 <| List.foldr (max << .uid) 0 openThreads
     }
 
 
 
--- TODO: use a Json decoder for flags
+-- TODO: use a JSON decoder for Flags
 
 
 type alias Flags =
     { authToken : Maybe String
-    , openThreads : String
     }
 
 
@@ -61,22 +53,8 @@ init flags location =
         currentRoute =
             Routing.parseLocation location
 
-        openThreads =
-            case Json.Decode.decodeString threadStatesDecoder flags.openThreads of
-                Ok openThreads ->
-                    openThreads
-
-                Err e ->
-                    log e []
-
         model =
-            initialModel flags.authToken openThreads currentRoute
-
-        openThreadsCmds =
-            openThreads
-                |> List.map (fetchListForContact model.authToken)
-                << List.filterMap takeKnownContacts
-                << List.map .to
+            initialModel flags.authToken currentRoute
     in
         case model.authToken of
             Nothing ->
@@ -86,23 +64,12 @@ init flags location =
                 case currentRoute of
                     DashboardRoute ->
                         model
-                            ! [ Cmd.batch openThreadsCmds
-                              , subscribeToTextMessages ()
+                            ! [ subscribeToTextMessages ()
                               , fetchLatestThreads model.authToken
                               ]
 
                     _ ->
-                        model ! openThreadsCmds
-
-
-takeKnownContacts : Recipient -> Maybe ContactId
-takeKnownContacts recipient =
-    case recipient of
-        KnownContact k ->
-            Just k
-
-        _ ->
-            Nothing
+                        model ! []
 
 
 subscriptions : Model -> Sub Msg

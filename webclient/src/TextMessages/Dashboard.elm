@@ -1,35 +1,40 @@
 module TextMessages.Dashboard exposing (view)
 
+import Char exposing (isDigit)
 import Contacts.Helpers exposing (getContact)
-import Contacts.Models exposing (Contact, ContactId, Recipient(KnownContact, RawPhoneNumber))
+import Contacts.Models exposing (Contact, ContactId)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
 import Html.Attributes exposing (class, href, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState)
+import Models exposing (Model, ThreadState, Workflow(NewContact, Thread))
 import TextMessages.Helpers exposing (latestThreads, messagesForContactId)
 import TextMessages.Models exposing (TextMessage, threadContactId)
 
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ class "main" ]
         [ header []
             [ h1 [ class "app-title" ] [ text "TextChat" ]
             ]
         , div [ class "dashboard" ]
             [ div [ class "latest-messages-container" ]
-                [ form [ class "new-message-form" ]
-                    [ label [ class "compose-field" ]
-                        [ input [ onInput InputPhoneNumber, value model.toPhoneNumber, placeholder "Enter name or number" ] []
+                [ div [ class "latest-messages-header" ]
+                    [ div [ class "new-message" ]
+                        [ button
+                            [ onClick StartComposing
+                            , class "button feature"
+                            ]
+                            [ text "New Message" ]
                         ]
-                    , div [] [ recipientSuggestions model ]
+                    , h2 [ class "section-break" ] [ text "Recent" ]
                     ]
-                , h2 [] [ text "Recent" ]
-                , div [] (List.map (threadSummary model) (latestThreads model.messages))
+                , div [ class "latest-messages-content" ]
+                    [ div [] (List.map (threadSummary model) (latestThreads model.messages))
+                    ]
                 ]
-            , div [ class "all-threads-container" ] <|
-                (model.openThreads |> List.map (threadView model))
+            , workflowView model
             ]
         ]
 
@@ -37,13 +42,13 @@ view model =
 recipientSuggestions : Model -> Html Msg
 recipientSuggestions model =
     div []
-        [ div [] ((List.map (knownContactSuggestion model)) model.contactSuggestions)
+        [ div [] ((List.map (contactSuggestion model)) model.contactSuggestions)
         , div [] [ rawPhoneNumberSuggestion model ]
         ]
 
 
-knownContactSuggestion : Model -> ContactId -> Html Msg
-knownContactSuggestion model contactId =
+contactSuggestion : Model -> ContactId -> Html Msg
+contactSuggestion model contactId =
     let
         contact =
             getContact model.contacts contactId
@@ -51,7 +56,7 @@ knownContactSuggestion model contactId =
         div []
             [ text "To: "
             , a
-                [ onClick (OpenThread (KnownContact contactId))
+                [ onClick (OpenThread contactId)
                 ]
                 [ text <| contactName contact ]
             ]
@@ -59,48 +64,30 @@ knownContactSuggestion model contactId =
 
 rawPhoneNumberSuggestion : Model -> Html Msg
 rawPhoneNumberSuggestion model =
-    case model.toPhoneNumber of
-        "" ->
-            span [] []
-
-        _ ->
-            case model.contactSuggestions of
-                [] ->
-                    div []
-                        [ text "New message to: "
-                        , a
-                            [ onClick (OpenThread (RawPhoneNumber model.toPhoneNumber))
-                            ]
-                            [ text model.toPhoneNumber ]
-                        ]
-
-                _ ->
-                    span [] []
-
-
-recipientSuggestion : Model -> Recipient -> Html Msg
-recipientSuggestion model recipient =
-    case recipient of
-        KnownContact contactId ->
-            let
-                contact =
-                    getContact model.contacts contactId
-            in
-                a [ onClick (OpenThread recipient) ] [ text <| contactName contact ]
-
-        RawPhoneNumber phoneNumber ->
-            text phoneNumber
+    if String.any isDigit model.toPhoneNumber == True then
+        div []
+            [ text "New message to: "
+            , a
+                [ onClick (CreateContact model.toPhoneNumber)
+                ]
+                [ text model.toPhoneNumber ]
+            ]
+    else
+        span [] []
 
 
 threadSummary : Model -> TextMessage -> Html Msg
 threadSummary model textMessage =
     let
+        contactId =
+            (threadContactId textMessage)
+
         contact =
-            Contacts.Helpers.getContact model.contacts (threadContactId textMessage)
+            Contacts.Helpers.getContact model.contacts contactId
     in
         div
             [ class "thread-summary"
-            , onClick (OpenThread (KnownContact (threadContactId textMessage)))
+            , onClick (OpenThread contactId)
             ]
             [ div [ class "thread-summary-title" ] [ text <| contactName contact ]
             , div [ class "thread-summary-body" ] [ text textMessage.body ]
@@ -119,58 +106,67 @@ contactName contact =
 
 messageView : TextMessage -> Html Msg
 messageView textMessage =
-    div [ class "message-bubble" ] [ text textMessage.body ]
+    if textMessage.incoming == True then
+        div [ class "message-bubble" ] [ text textMessage.body ]
+    else
+        div [ class "message-bubble outgoing" ] [ text textMessage.body ]
+
+
+workflowView : Model -> Html Msg
+workflowView model =
+    case model.workflow of
+        Thread threadState ->
+            threadView model threadState
+
+        NewContact ->
+            newContactView model
 
 
 threadView : Model -> ThreadState -> Html Msg
 threadView model threadState =
-    case threadState.to of
-        KnownContact contact ->
-            knownContactThreadView model threadState contact
-
-        RawPhoneNumber phoneNumber ->
-            rawPhoneNumberThreadView model threadState phoneNumber
-
-
-knownContactThreadView : Model -> ThreadState -> ContactId -> Html Msg
-knownContactThreadView model threadState contactId =
     let
         contact =
-            Contacts.Helpers.getContact model.contacts contactId
+            Contacts.Helpers.getContact model.contacts threadState.to
     in
-        div [ class "thread" ]
-            [ h2 [] [ text <| contactName contact, span [] [ text " " ], a [ onClick (CloseThread threadState.uid) ] [ text " [X]" ] ]
-            , div [ class "thread-messages" ]
-                [ div [] (List.map messageView (messagesForContactId contact.id model.messages))
+        div [ class "thread-container" ]
+            [ div [ class "thread-title" ]
+                [ h2 [] [ text <| contactName contact, span [] [ text " " ] ]
                 ]
-            , form [ onSubmit (SendThreadMessage (KnownContact contactId) threadState) ]
-                [ input
-                    [ type_ "text"
-                    , placeholder "Type your message here"
-                    , onInput (InputThreadMessage threadState)
-                    , value threadState.draftMessage
+            , div [ class "thread-content" ]
+                [ div [ class "thread-messages-pane" ]
+                    [ div [ class "thread-body" ]
+                        [ div [ class "thread-messages" ]
+                            [ div [] (List.map messageView (messagesForContactId contact.id model.messages))
+                            ]
+                        ]
+                    , div [ class "thread-footer" ]
+                        [ form [ onSubmit (SendMessage threadState) ]
+                            [ div [ class "input-container" ]
+                                [ input
+                                    [ type_ "text"
+                                    , class "message-input"
+                                    , placeholder "Type your message here"
+                                    , onInput (InputThreadMessage threadState)
+                                    , value threadState.draftMessage
+                                    ]
+                                    []
+                                ]
+                            ]
+                        ]
                     ]
-                    []
+                , div [ class "thread-contact-pane" ]
+                    [ h2 [] [ text contact.phoneNumber ]
+                    , h2 [ class "section-break" ] [ text "Options" ]
+                    ]
                 ]
             ]
 
 
-rawPhoneNumberThreadView : Model -> ThreadState -> String -> Html Msg
-rawPhoneNumberThreadView model threadState phoneNumber =
-    div [ class "thread" ]
-        [ h2 []
-            [ text phoneNumber
-            , span [] [ text " " ]
-            , a [ onClick (CloseThread threadState.uid) ] [ text " [X]" ]
+newContactView : Model -> Html Msg
+newContactView model =
+    div [ class "thread-container" ]
+        [ label [ class "compose-field" ]
+            [ input [ onInput InputContactSearch, value model.toPhoneNumber, placeholder "Enter name or number" ] []
             ]
-        , div [] []
-        , form [ onSubmit (SendThreadMessage (RawPhoneNumber phoneNumber) threadState) ]
-            [ input
-                [ type_ "text"
-                , placeholder "Type your message here"
-                , onInput (InputThreadMessage threadState)
-                , value threadState.draftMessage
-                ]
-                []
-            ]
+        , div [] [ recipientSuggestions model ]
         ]

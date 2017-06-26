@@ -22,6 +22,14 @@ public class ContactController {
         this.contactRepository = contactRepository;
     }
 
+    @PostMapping("/contacts")
+    @PreAuthorize("hasAuthority('USER')")
+    public ContactResponse create(@RequestBody CreateContactRequest createContactRequest) {
+        Contact contact = contactRepository.save(new Contact(createContactRequest.getPhoneNumber(), ""));
+
+        return new ContactResponse(contact);
+    }
+
     @PutMapping("/contacts")
     @PreAuthorize("hasAuthority('USER')")
     public void update(@RequestBody UpdateContactRequest updateContactRequest) {
@@ -34,7 +42,7 @@ public class ContactController {
 
     @GetMapping("/contacts")
     @PreAuthorize("hasAuthority('USER')")
-    public List<ContactResponse> list(@RequestParam String q) {
+    public List<ContactResponse> search(@RequestParam String q) {
         return contactRepository
                 .search(q)
                 .stream()
@@ -52,6 +60,14 @@ public class ContactController {
 
         public String getLabel() {
             return label;
+        }
+    }
+
+    private static class CreateContactRequest {
+        private String phoneNumber;
+
+        public String getPhoneNumber() {
+            return phoneNumber;
         }
     }
 }

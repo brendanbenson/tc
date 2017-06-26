@@ -1,21 +1,25 @@
-module TextMessages.Helpers exposing (addMessages, latestThreads, messagesForContactId, updateThreadState)
+module TextMessages.Helpers exposing (..)
 
 import Contacts.Models exposing (ContactId)
 import Dict exposing (Dict)
-import List exposing (concat, foldr, reverse, sortBy)
+import List exposing (append, concat, filter, foldr, reverse, sortBy)
 import List.Extra exposing (uniqueBy)
-import Models exposing (ThreadState, Uid)
 import TextMessages.Models exposing (TextMessage, threadContactId)
+
+
+addMessage : TextMessage -> List TextMessage -> List TextMessage
+addMessage newMessage existingMessages =
+    newMessage :: existingMessages |> uniqueBy .id
 
 
 addMessages : List TextMessage -> List TextMessage -> List TextMessage
 addMessages existingMessages newMessages =
-    concat [ existingMessages, newMessages ] |> uniqueBy .id
+    foldr addMessage existingMessages newMessages
 
 
 messagesForContactId : ContactId -> List TextMessage -> List TextMessage
 messagesForContactId contactId =
-    List.filter (textMessageMatchesContact contactId) >> sortBy .id
+    filter (textMessageMatchesContact contactId) >> sortBy .id
 
 
 textMessageMatchesContact : ContactId -> TextMessage -> Bool
@@ -46,16 +50,3 @@ addTextMessageToThread textMessage threads =
 
             Nothing ->
                 Dict.insert contactId textMessage threads
-
-
-updateThreadState : ThreadState -> List ThreadState -> List ThreadState
-updateThreadState desiredThreadState threadStates =
-    List.map (updateThreadStateIfMatches desiredThreadState) threadStates
-
-
-updateThreadStateIfMatches : ThreadState -> ThreadState -> ThreadState
-updateThreadStateIfMatches desiredThreadState existingThreadState =
-    if desiredThreadState.uid == existingThreadState.uid then
-        desiredThreadState
-    else
-        existingThreadState

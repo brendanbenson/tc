@@ -3,10 +3,10 @@ module TextMessages.Api exposing (..)
 import Authentication.AuthToken exposing (AuthToken)
 import Http exposing (Error, jsonBody)
 import HttpHelpers
-import Messages exposing (Msg(FetchedLatestThreads, FetchedListForContact, SentRawPhoneNumberMessage))
+import Messages exposing (Msg(FetchedLatestThreads, FetchedTextMessagesForContact))
 import Models exposing (ContactId)
 import TextMessages.Decoders exposing (decodeTextMessage, decodeTextMessageList)
-import TextMessages.Encoders exposing (createContactTextMessageRequest, createTextMessageRequest)
+import TextMessages.Encoders exposing (createTextMessageRequest)
 import TextMessages.Models exposing (TextMessage)
 
 
@@ -31,22 +31,7 @@ fetchListForContact authToken contactId =
         request =
             HttpHelpers.get authToken url decodeTextMessageList
     in
-        Http.send FetchedListForContact request
-
-
-sendRawPhoneNumberMessage : AuthToken -> String -> String -> (Result Error TextMessage -> Msg) -> Cmd Msg
-sendRawPhoneNumberMessage authToken phoneNumber body handler =
-    let
-        url =
-            "http://localhost:8080/text-messages"
-
-        requestBody =
-            createTextMessageRequest phoneNumber body |> jsonBody
-
-        request =
-            HttpHelpers.post authToken url requestBody decodeTextMessage
-    in
-        Http.send handler request
+        Http.send FetchedTextMessagesForContact request
 
 
 sendContactMessage : AuthToken -> ContactId -> String -> (Result Error TextMessage -> Msg) -> Cmd Msg
@@ -56,7 +41,7 @@ sendContactMessage authToken contactId body handler =
             "http://localhost:8080/contacts/" ++ (toString contactId) ++ "/text-messages"
 
         requestBody =
-            createContactTextMessageRequest body |> jsonBody
+            createTextMessageRequest body |> jsonBody
 
         request =
             HttpHelpers.post authToken url requestBody decodeTextMessage

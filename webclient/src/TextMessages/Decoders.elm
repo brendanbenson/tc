@@ -6,16 +6,6 @@ import Json.Decode.Pipeline exposing (decode, required)
 import TextMessages.Models exposing (TextMessage)
 
 
-decodeTextMessageResponse : String -> List TextMessage
-decodeTextMessageResponse rawJson =
-    case decodeString decodeTextMessageList rawJson of
-        Ok stuff ->
-            stuff
-
-        Err _ ->
-            []
-
-
 decodeTextMessageList : Decoder (List TextMessage)
 decodeTextMessageList =
     list decodeTextMessage

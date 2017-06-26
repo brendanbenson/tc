@@ -12,18 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @RestController
-public class OtherTextMessagesController {
+public class TextMessagesController {
     private TextMessageRepository textMessageRepository;
     private ContactRepository contactRepository;
     private SimpMessagingTemplate simpMessagingTemplate;
     private TextMessageService textMessageService;
 
     @Autowired
-    public OtherTextMessagesController(
+    public TextMessagesController(
             TextMessageRepository textMessageRepository,
             ContactRepository contactRepository,
             SimpMessagingTemplate simpMessagingTemplate,
@@ -50,8 +49,9 @@ public class OtherTextMessagesController {
     public List<TextMessageResponse> listTextMessagesForContact(@PathVariable Long contactId) {
         Contact contact = contactRepository.findOne(contactId);
 
-        return textMessageRepository
-                .findAllByToContactOrderByCreatedAtDesc(contact)
+        List<TextMessage> stuff = textMessageRepository
+                .findAllByToContactOrFromContactOrderByCreatedAtDesc(contact, contact);
+        return stuff
                 .stream()
                 .map(TextMessageResponse::new)
                 .collect(toList());
@@ -65,7 +65,7 @@ public class OtherTextMessagesController {
                 sendMessageRequest.getBody()
         );
 
-        simpMessagingTemplate.convertAndSend("/text-messages", singletonList(textMessage));
+        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
 
         return new TextMessageResponse(textMessage);
     }
@@ -83,11 +83,12 @@ public class OtherTextMessagesController {
                 sendContactMessageRequest.getBody()
         );
 
-        simpMessagingTemplate.convertAndSend("/text-messages", singletonList(textMessage));
+        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
 
         return new TextMessageResponse(textMessage);
     }
 
+    // TODO: add some security here so random people can't hit this endpoint
     @PostMapping("/receive-sms")
     @PreAuthorize("permitAll()")
     public void receiveTextMessage(HttpServletRequest httpServletRequest) {
@@ -97,6 +98,6 @@ public class OtherTextMessagesController {
 
         TextMessage textMessage = textMessageService.recordReceipt(from, to, body);
 
-        simpMessagingTemplate.convertAndSend("/text-messages", singletonList(textMessage));
+        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
     }
 }

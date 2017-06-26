@@ -12,8 +12,3 @@ type alias Contact =
     , phoneNumber : String
     , label : String
     }
-
-
-type Recipient
-    = KnownContact ContactId
-    | RawPhoneNumber String

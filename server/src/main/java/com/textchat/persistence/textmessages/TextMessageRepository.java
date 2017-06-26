@@ -7,7 +7,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.List;
 
 public interface TextMessageRepository extends PagingAndSortingRepository<TextMessage, Long> {
-    List<TextMessage> findAllByToContactOrderByCreatedAtDesc(Contact contact);
+    List<TextMessage> findAllByToContactOrFromContactOrderByCreatedAtDesc(Contact toContact, Contact fromContact);
 
     @Query(nativeQuery = true,
             value = "SELECT m1.* FROM text_messages m1 " +

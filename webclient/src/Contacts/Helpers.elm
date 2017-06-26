@@ -1,9 +1,8 @@
 module Contacts.Helpers exposing (..)
 
-import Contacts.Models exposing (ContactId)
+import Contacts.Models exposing (Contact, ContactId)
 import Dict exposing (Dict)
 import Maybe exposing (withDefault)
-import Models exposing (Contact)
 
 
 updateContacts : Dict Int Contact -> List Contact -> Dict Int Contact

@@ -1,7 +1,7 @@
 module Models exposing (..)
 
 import Authentication.AuthToken exposing (AuthToken)
-import Contacts.Models exposing (Recipient)
+import Contacts.Models exposing (Contact)
 import Dict exposing (Dict)
 import Routing exposing (Route)
 import TextMessages.Models exposing (TextMessage)
@@ -10,40 +10,33 @@ import TextMessages.Models exposing (TextMessage)
 type alias Model =
     { contacts : Dict ContactId Contact
     , contactSuggestions : List ContactId
+
+    -- TODO: rename toPhoneNumber
     , toPhoneNumber : String
     , messages : List TextMessage
-    , openThreads : List ThreadState
+    , workflow : Workflow
     , route : Route
     , username : String
     , password : String
     , authToken : AuthToken
     , authError : Bool
-    , uid : Uid
     }
 
 
-type alias Uid =
-    Int
-
-
-type alias Contact =
-    { id : ContactId
-    , phoneNumber : String
-    , label : String
-    }
+type Workflow
+    = Thread ThreadState
+    | NewContact
 
 
 type alias ThreadState =
-    { to : Recipient
-    , uid : Uid
+    { to : ContactId
     , draftMessage : String
     }
 
 
-newThreadState : Recipient -> Uid -> ThreadState
-newThreadState recipient uid =
-    { to = recipient
-    , uid = uid
+newThreadState : ContactId -> ThreadState
+newThreadState contactId =
+    { to = contactId
     , draftMessage = ""
     }
 

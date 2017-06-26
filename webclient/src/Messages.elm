@@ -1,27 +1,43 @@
 module Messages exposing (..)
 
 import Authentication.Models exposing (AuthenticationResponse)
-import Contacts.Models exposing (Contact, ContactId, Recipient)
+import Contacts.Models exposing (Contact, ContactId)
 import Http
-import Models exposing (ThreadState, Uid)
+import Models exposing (ThreadState)
 import Navigation exposing (Location)
 import TextMessages.Models exposing (TextMessage)
 
 
-type Msg
-    = InputPhoneNumber String
-    | SearchedContacts (Result Http.Error (List Contact))
+type
+    Msg
+    --
+    -- Contact auto-complete
+    = InputContactSearch String
     | SearchContacts String
+    | SearchedContacts (Result Http.Error (List Contact))
+      --
+      -- Text messages
     | ReceiveMessages String
-    | OpenThread Recipient
-    | CloseThread Uid
-    | FetchedListForContact (Result Http.Error (List TextMessage))
-    | FetchedLatestThreads (Result Http.Error (List TextMessage))
+      --
+      -- Threads
+    | OpenThread ContactId
+    | FetchedTextMessagesForContact (Result Http.Error (List TextMessage))
+    | StartComposing
     | InputThreadMessage ThreadState String
-    | SendThreadMessage Recipient ThreadState
-    | SentRawPhoneNumberMessage Uid (Result Http.Error TextMessage)
-    | SentContactMessage (Result Http.Error TextMessage)
+    | SendMessage ThreadState
+    | SentMessage (Result Http.Error TextMessage)
+      --
+      -- Thread summaries
+    | FetchedLatestThreads (Result Http.Error (List TextMessage))
+      --
+      -- Contact management
+    | CreateContact String
+    | ContactCreated (Result Http.Error Contact)
+      --
+      -- Util
     | OnLocationChange Location
+      --
+      -- Login
     | InputUsername String
     | InputPassword String
     | SubmitLogin
