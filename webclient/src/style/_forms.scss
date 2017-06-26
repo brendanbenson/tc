@@ -1,7 +1,7 @@
 input {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   font-weight: 300;
-  font-size: 0.8rem;
+  font-size: 1.1em;
   color: $content;
   display:block;
   width:100%;
@@ -29,7 +29,7 @@ button {
   font-weight: 300;
   text-decoration: none;
 
-  &:hover {
+  &:hover, &:focus {
     background-color: darken($flair, 7);
     text-decoration: none;
     color: $simple;
@@ -58,8 +58,6 @@ button {
   &::before {
     font-family: FontAwesome;
     content: "\f044";
-    position: relative;
-    top: 2px;
   }
 
   input {

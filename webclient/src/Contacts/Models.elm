@@ -12,3 +12,11 @@ type alias Contact =
     , phoneNumber : String
     , label : String
     }
+
+
+emptyContact : Contact
+emptyContact =
+    { id = 0
+    , phoneNumber = ""
+    , label = ""
+    }

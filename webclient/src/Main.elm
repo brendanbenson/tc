@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Contacts.Models exposing (emptyContact)
 import Dict
 import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
@@ -25,11 +26,13 @@ main =
 
 initialModel : Maybe String -> Route -> Model
 initialModel authToken route =
-    { toPhoneNumber = ""
+    { contactSearch = ""
     , messages = []
     , contactSuggestions = []
     , workflow = NewContact
     , contacts = Dict.empty
+    , editingContact = False
+    , contactEdits = emptyContact
     , username = ""
     , password = ""
     , authToken = authToken

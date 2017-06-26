@@ -6,14 +6,14 @@ import Json.Decode
 import Maybe exposing (withDefault)
 
 
-put : AuthToken -> String -> Body -> Request ()
-put authToken url body =
+put : AuthToken -> String -> Body -> Json.Decode.Decoder a -> Request a
+put authToken url body decoder =
     request
         { method = "PUT"
         , headers = [ authHeader authToken ]
         , url = url
         , body = body
-        , expect = expectStringResponse (\_ -> Ok ())
+        , expect = expectJson decoder
         , timeout = Nothing
         , withCredentials = False
         }

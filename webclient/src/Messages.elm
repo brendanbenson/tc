@@ -33,9 +33,15 @@ type
       -- Contact management
     | CreateContact String
     | ContactCreated (Result Http.Error Contact)
+    | StartEditingContact Contact
+    | InputContactLabel String
+    | InputContactPhoneNumber String
+    | EditContact Contact
+    | EditedContact (Result Http.Error Contact)
       --
       -- Util
     | OnLocationChange Location
+    | NoOp
       --
       -- Login
     | InputUsername String

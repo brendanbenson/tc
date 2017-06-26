@@ -9,12 +9,12 @@ public class Contact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(unique = true)
     private String phoneNumber;
     private String label;
     @Column(updatable = false, insertable = false)
     private Date createdAt;
-
     public Contact() {
     }
 
@@ -37,6 +37,10 @@ public class Contact {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public Date getCreatedAt() {

@@ -19,6 +19,10 @@ h2 {
   font-size: 1.5em;
 }
 
+h3 {
+  font-size: 1.1em;
+}
+
 .section-break {
   background-color: $simple;
   margin: 0;
@@ -136,9 +140,27 @@ a:hover {
     .thread-contact-pane {
       flex: 0 1 18em;
       min-width: 18em;
+
+      .contact-details {
+        padding: 1em;
+
+        .add-name {
+          cursor: pointer;
+          color: $simple-content;
+
+          &:hover {
+            color: $flair;
+          }
+        }
+
+        input {
+          border: 1px solid $simple;
+          margin: .5em 0;
+          padding: .3em 0;
+        }
+      }
     }
   }
-
 }
 
 .message-bubble {
@@ -163,4 +185,17 @@ a:hover {
 
 .new-message {
   padding: 1em;
+}
+
+.hover-edit {
+  cursor: pointer;
+
+  &:hover {
+    color: $flair;
+
+    &::after {
+      content: ' \f040';
+      font-family: FontAwesome;
+    }
+  }
 }

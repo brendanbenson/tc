@@ -2,10 +2,11 @@ module Contacts.Api exposing (..)
 
 import Authentication.AuthToken exposing (AuthToken)
 import Contacts.Decoders exposing (decodeContact, decodeContactList)
-import Contacts.Encoders exposing (createContactRequest)
+import Contacts.Encoders exposing (createContactRequest, editContactRequest)
+import Contacts.Models exposing (Contact)
 import Http exposing (jsonBody)
 import HttpHelpers
-import Messages exposing (Msg(ContactCreated, SearchedContacts))
+import Messages exposing (Msg(ContactCreated, EditedContact, SearchedContacts))
 
 
 search : AuthToken -> String -> Cmd Msg
@@ -33,3 +34,18 @@ createContact authToken phoneNumber =
             HttpHelpers.post authToken url requestBody decodeContact
     in
         Http.send ContactCreated request
+
+
+editContact : AuthToken -> Contact -> Cmd Msg
+editContact authToken contact =
+    let
+        url =
+            "http://localhost:8080/contacts"
+
+        requestBody =
+            jsonBody <| editContactRequest contact
+
+        request =
+            HttpHelpers.put authToken url requestBody decodeContact
+    in
+        Http.send EditedContact request

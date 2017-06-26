@@ -32,12 +32,15 @@ public class ContactController {
 
     @PutMapping("/contacts")
     @PreAuthorize("hasAuthority('USER')")
-    public void update(@RequestBody UpdateContactRequest updateContactRequest) {
-        Contact contact = contactRepository.findByPhoneNumber(updateContactRequest.getPhoneNumber());
+    public ContactResponse update(@RequestBody UpdateContactRequest updateContactRequest) {
+        Contact contact = contactRepository.findOne(updateContactRequest.getId());
 
         contact.setLabel(updateContactRequest.getLabel());
+        contact.setPhoneNumber(updateContactRequest.getPhoneNumber());
 
-        contactRepository.save(contact);
+        Contact savedContact = contactRepository.save(contact);
+
+        return new ContactResponse(savedContact);
     }
 
     @GetMapping("/contacts")
@@ -51,8 +54,13 @@ public class ContactController {
     }
 
     private static class UpdateContactRequest {
+        private Long id;
         private String phoneNumber;
         private String label;
+
+        public Long getId() {
+            return id;
+        }
 
         public String getPhoneNumber() {
             return phoneNumber;

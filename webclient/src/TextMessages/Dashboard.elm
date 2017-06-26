@@ -4,7 +4,7 @@ import Char exposing (isDigit)
 import Contacts.Helpers exposing (getContact)
 import Contacts.Models exposing (Contact, ContactId)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
-import Html.Attributes exposing (class, href, placeholder, type_, value)
+import Html.Attributes exposing (class, href, id, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Messages exposing (Msg(..))
 import Models exposing (Model, ThreadState, Workflow(NewContact, Thread))
@@ -64,13 +64,13 @@ contactSuggestion model contactId =
 
 rawPhoneNumberSuggestion : Model -> Html Msg
 rawPhoneNumberSuggestion model =
-    if String.any isDigit model.toPhoneNumber == True then
+    if String.any isDigit model.contactSearch == True then
         div []
             [ text "New message to: "
             , a
-                [ onClick (CreateContact model.toPhoneNumber)
+                [ onClick (CreateContact model.contactSearch)
                 ]
-                [ text model.toPhoneNumber ]
+                [ text model.contactSearch ]
             ]
     else
         span [] []
@@ -134,7 +134,7 @@ threadView model threadState =
                 ]
             , div [ class "thread-content" ]
                 [ div [ class "thread-messages-pane" ]
-                    [ div [ class "thread-body" ]
+                    [ div [ class "thread-body", id "thread-body" ]
                         [ div [ class "thread-messages" ]
                             [ div [] (List.map messageView (messagesForContactId contact.id model.messages))
                             ]
@@ -155,18 +155,61 @@ threadView model threadState =
                         ]
                     ]
                 , div [ class "thread-contact-pane" ]
-                    [ h2 [] [ text contact.phoneNumber ]
+                    [ contactDetails model contact
                     , h2 [ class "section-break" ] [ text "Options" ]
                     ]
                 ]
             ]
 
 
+contactDetails : Model -> Contact -> Html Msg
+contactDetails model contact =
+    let
+        contactLabel =
+            case contact.label of
+                "" ->
+                    h2 [ class "add-name", onClick <| StartEditingContact contact ]
+                        [ i [ class "fa fa-plus" ] []
+                        , text " Add Name"
+                        ]
+
+                label ->
+                    h2 [ onClick <| StartEditingContact contact, class "hover-edit" ] [ text label ]
+    in
+        case model.editingContact of
+            True ->
+                div [ class "contact-details" ]
+                    [ form [ onSubmit <| EditContact model.contactEdits ]
+                        [ input
+                            [ type_ "text"
+                            , placeholder "Name"
+                            , value model.contactEdits.label
+                            , onInput InputContactLabel
+                            ]
+                            []
+                        , input
+                            [ type_ "text"
+                            , placeholder "Phone number"
+                            , value model.contactEdits.phoneNumber
+                            , onInput InputContactPhoneNumber
+                            ]
+                            []
+                        , button [ type_ "submit" ] [ text "Submit" ]
+                        ]
+                    ]
+
+            False ->
+                div [ class "contact-details" ]
+                    [ contactLabel
+                    , h3 [ onClick <| StartEditingContact contact, class "hover-edit" ] [ text contact.phoneNumber ]
+                    ]
+
+
 newContactView : Model -> Html Msg
 newContactView model =
     div [ class "thread-container" ]
         [ label [ class "compose-field" ]
-            [ input [ onInput InputContactSearch, value model.toPhoneNumber, placeholder "Enter name or number" ] []
+            [ input [ onInput InputContactSearch, value model.contactSearch, placeholder "Enter name or number" ] []
             ]
         , div [] [ recipientSuggestions model ]
         ]

@@ -10,9 +10,9 @@ import TextMessages.Models exposing (TextMessage)
 type alias Model =
     { contacts : Dict ContactId Contact
     , contactSuggestions : List ContactId
-
-    -- TODO: rename toPhoneNumber
-    , toPhoneNumber : String
+    , contactSearch : String
+    , editingContact : Bool
+    , contactEdits : Contact
     , messages : List TextMessage
     , workflow : Workflow
     , route : Route

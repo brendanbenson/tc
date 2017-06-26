@@ -1,9 +1,10 @@
 module Update exposing (..)
 
 import Authentication.Api exposing (authenticate)
-import Contacts.Api exposing (createContact)
+import Contacts.Api exposing (createContact, editContact)
 import Contacts.Helpers exposing (getContact, updateContact, updateContacts)
 import Contacts.Models exposing (ContactId)
+import Dom.Scroll
 import Json.Decode exposing (decodeString)
 import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
@@ -11,6 +12,7 @@ import Models exposing (Model, Workflow(NewContact, Thread), newThreadState)
 import Ports exposing (saveAuthToken, subscribeToTextMessages)
 import Routing exposing (Route(DashboardRoute, LoginRoute), newUrl, parseLocation)
 import String exposing (isEmpty)
+import Task
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, sendContactMessage)
 import TextMessages.Decoders exposing (decodeTextMessage)
@@ -23,20 +25,20 @@ update msg model =
     case msg of
         InputContactSearch newPhoneNumber ->
             if isEmpty newPhoneNumber then
-                { model | toPhoneNumber = newPhoneNumber, contactSuggestions = [] } ! []
+                { model | contactSearch = newPhoneNumber, contactSuggestions = [] } ! []
             else
-                { model | toPhoneNumber = newPhoneNumber }
-                    ! [ delay (Time.millisecond * 500) <| SearchContacts newPhoneNumber ]
+                { model | contactSearch = newPhoneNumber }
+                    ! [ delay (Time.millisecond * 200) <| SearchContacts newPhoneNumber ]
 
         SearchContacts phoneNumberToSearch ->
             let
                 cmd =
                     if
-                        model.toPhoneNumber
+                        model.contactSearch
                             == phoneNumberToSearch
                             && (phoneNumberToSearch |> not << isEmpty)
                     then
-                        Contacts.Api.search model.authToken model.toPhoneNumber
+                        Contacts.Api.search model.authToken model.contactSearch
                     else
                         Cmd.none
             in
@@ -79,13 +81,14 @@ update msg model =
                         updatedMessages =
                             TextMessages.Helpers.addMessages model.messages [ textMessage ]
                     in
-                        { model | messages = updatedMessages, contacts = contacts } ! []
+                        { model | messages = updatedMessages, contacts = contacts }
+                            ! [ scrollToBottom ]
 
                 Err e ->
                     Debug.log e <| model ! []
 
         OpenThread contactId ->
-            { model | toPhoneNumber = "", contactSuggestions = [] } ! [] |> openThread contactId
+            { model | contactSearch = "", contactSuggestions = [] } ! [ scrollToBottom ] |> openThread contactId
 
         StartComposing ->
             { model | workflow = NewContact } ! []
@@ -100,8 +103,36 @@ update msg model =
             -- TODO: implement error handling
             model ! []
 
+        StartEditingContact contact ->
+            { model | editingContact = True, contactEdits = contact } ! []
+
+        InputContactLabel label ->
+            let
+                originalContactEdits =
+                    model.contactEdits
+            in
+                { model | contactEdits = { originalContactEdits | label = label } } ! []
+
+        InputContactPhoneNumber phoneNumber ->
+            let
+                originalContactEdits =
+                    model.contactEdits
+            in
+                { model | contactEdits = { originalContactEdits | phoneNumber = phoneNumber } } ! []
+
+        EditContact contact ->
+            model ! [ editContact model.authToken contact ]
+
+        EditedContact (Ok contact) ->
+            { model | editingContact = False, contacts = updateContact contact model.contacts } ! []
+
+        EditedContact (Err e) ->
+            -- TODO: implement error handling
+            model ! []
+
         FetchedTextMessagesForContact (Ok fetchedMessages) ->
-            ( { model | messages = TextMessages.Helpers.addMessages model.messages fetchedMessages }, Cmd.none )
+            { model | messages = TextMessages.Helpers.addMessages model.messages fetchedMessages }
+                ! [ scrollToBottom ]
 
         FetchedTextMessagesForContact (Err _) ->
             model ! []
@@ -152,8 +183,19 @@ update msg model =
         SubmittedLogin (Err _) ->
             { model | authError = True } ! []
 
+        NoOp ->
+            model ! []
+
 
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 openThread contactId ( model, cmd ) =
-    { model | workflow = Thread (newThreadState contactId) }
+    { model
+        | workflow = Thread (newThreadState contactId)
+        , editingContact = False
+    }
         ! [ cmd, fetchListForContact model.authToken contactId ]
+
+
+scrollToBottom : Cmd Msg
+scrollToBottom =
+    Task.attempt (always NoOp) <| Dom.Scroll.toBottom "thread-body"
