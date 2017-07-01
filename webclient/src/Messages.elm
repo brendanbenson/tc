@@ -14,7 +14,7 @@ type
     -- Contact auto-complete
     = InputContactSearch String
     | SearchContacts String
-    | SearchedContacts (Result Http.Error (List Contact))
+    | SearchedContacts String (Result Http.Error (List Contact))
       --
       -- Text messages
     | ReceiveMessages String
@@ -25,7 +25,7 @@ type
     | StartComposing
     | InputThreadMessage ThreadState String
     | SendMessage ThreadState
-    | SentMessage (Result Http.Error TextMessage)
+    | SentMessage ThreadState (Result Http.Error TextMessage)
       --
       -- Thread summaries
     | FetchedLatestThreads (Result Http.Error (List TextMessage))
@@ -33,18 +33,26 @@ type
       -- Contact management
     | CreateContact String
     | ContactCreated (Result Http.Error Contact)
-    | StartEditingContact Contact
+    | StartEditingContact String Contact
     | InputContactLabel String
     | InputContactPhoneNumber String
     | EditContact Contact
     | EditedContact (Result Http.Error Contact)
+    | OpenCreateContactModal String
+    | CloseCreateContactModal
+    | InputCreateContactName String
+    | InputCreateContactPhoneNumber String
+    | CreateFullContact String String
+    | FullContactCreated (Result Http.Error Contact)
       --
       -- Util
     | OnLocationChange Location
     | NoOp
+    | UserMessageExpired
       --
       -- Login
     | InputUsername String
     | InputPassword String
     | SubmitLogin
     | SubmittedLogin (Result Http.Error AuthenticationResponse)
+    | LogOut

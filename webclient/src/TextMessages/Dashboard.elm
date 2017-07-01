@@ -4,10 +4,11 @@ import Char exposing (isDigit)
 import Contacts.Helpers exposing (getContact)
 import Contacts.Models exposing (Contact, ContactId)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
-import Html.Attributes exposing (class, href, id, placeholder, type_, value)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState, Workflow(NewContact, Thread))
+import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(NewContact, Thread))
 import TextMessages.Helpers exposing (latestThreads, messagesForContactId)
 import TextMessages.Models exposing (TextMessage, threadContactId)
 
@@ -15,8 +16,12 @@ import TextMessages.Models exposing (TextMessage, threadContactId)
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
-        [ header []
-            [ h1 [ class "app-title" ] [ text "TextChat" ]
+        [ userMessages model
+        , header []
+            [ div [ class "header-main" ]
+                [ h1 [ class "app-title" ] [ text "TextChat" ]
+                ]
+            , a [ onClick LogOut, class "log-out" ] [ text "Log Out" ]
             ]
         , div [ class "dashboard" ]
             [ div [ class "latest-messages-container" ]
@@ -36,15 +41,74 @@ view model =
                 ]
             , workflowView model
             ]
+        , modal model.createContactModalOpen (createContactModal model)
         ]
+
+
+createContactModal : Model -> Html Msg
+createContactModal model =
+    div []
+        [ a [ onClick CloseCreateContactModal, class "modal-close" ]
+            [ i [ class "fa fa-close" ] []
+            , text " Cancel"
+            ]
+        , h2 [] [ text "Create Contact" ]
+        , form [ onSubmit (CreateFullContact model.createContactName model.createContactPhoneNumber) ]
+            [ input
+                [ type_ "text"
+                , placeholder "Name"
+                , value model.createContactName
+                , onInput InputCreateContactName
+                ]
+                []
+            , input
+                [ type_ "text"
+                , placeholder "Phone number"
+                , id "create-contact-phone-number"
+                , value model.createContactPhoneNumber
+                , onInput InputCreateContactPhoneNumber
+                ]
+                []
+            , button
+                [ type_ "submit"
+                , disabled model.creatingFullContact
+                , spin model.creatingFullContact
+                ]
+                [ text "Submit" ]
+            ]
+        ]
+
+
+modal : Bool -> Html Msg -> Html Msg
+modal shouldDisplay content =
+    if shouldDisplay == True then
+        div [ class "modal-container" ]
+            [ div [ class "modal" ] [ content ]
+            ]
+    else
+        span [] []
 
 
 recipientSuggestions : Model -> Html Msg
 recipientSuggestions model =
     div []
-        [ div [] ((List.map (contactSuggestion model)) model.contactSuggestions)
+        [ loadingSuggestions model
+        , div [] ((List.map (contactSuggestion model)) model.contactSuggestions)
         , div [] [ rawPhoneNumberSuggestion model ]
         ]
+
+
+loadingSuggestions : Model -> Html Msg
+loadingSuggestions model =
+    if model.loadingContactSuggestions == True then
+        div [ class "contact-suggestion" ]
+            [ span [ class "loading" ]
+                [ i [ class "fa fa-spin fa-circle-o-notch" ] []
+                , text " Loading suggestions..."
+                ]
+            ]
+    else
+        span [] []
 
 
 contactSuggestion : Model -> ContactId -> Html Msg
@@ -53,27 +117,29 @@ contactSuggestion model contactId =
         contact =
             getContact model.contacts contactId
     in
-        div []
-            [ text "To: "
-            , a
-                [ onClick (OpenThread contactId)
-                ]
-                [ text <| contactName contact ]
+        div [ class "contact-suggestion", onClick (OpenThread contactId) ]
+            [ span [ class "label" ] [ text "To: " ]
+            , span [ class "body" ] [ text <| contactName contact ]
             ]
 
 
 rawPhoneNumberSuggestion : Model -> Html Msg
 rawPhoneNumberSuggestion model =
-    if String.any isDigit model.contactSearch == True then
-        div []
-            [ text "New message to: "
-            , a
-                [ onClick (CreateContact model.contactSearch)
-                ]
-                [ text model.contactSearch ]
-            ]
-    else
-        span [] []
+    case model.contactSearch of
+        "" ->
+            span [] []
+
+        _ ->
+            if String.any isDigit model.contactSearch == True then
+                div [ class "contact-suggestion", onClick (CreateContact model.contactSearch) ]
+                    [ span [ class "label" ] [ text "New message to: " ]
+                    , span [ class "body" ] [ text <| String.filter isDigit model.contactSearch ]
+                    ]
+            else
+                div [ class "contact-suggestion", onClick (OpenCreateContactModal model.contactSearch) ]
+                    [ span [ class "label" ] [ text "Create new contact: " ]
+                    , span [ class "body" ] [ text model.contactSearch ]
+                    ]
 
 
 threadSummary : Model -> TextMessage -> Html Msg
@@ -112,6 +178,18 @@ messageView textMessage =
         div [ class "message-bubble outgoing" ] [ text textMessage.body ]
 
 
+messageLoadingView : ThreadState -> Html Msg
+messageLoadingView threadState =
+    if threadState.sendingMessage == True then
+        div [ class "message-bubble outgoing loading" ]
+            [ i [ class "fa fa-spin fa-circle-o-notch" ] []
+            , text " "
+            , text threadState.draftMessage
+            ]
+    else
+        span [] []
+
+
 workflowView : Model -> Html Msg
 workflowView model =
     case model.workflow of
@@ -136,7 +214,9 @@ threadView model threadState =
                 [ div [ class "thread-messages-pane" ]
                     [ div [ class "thread-body", id "thread-body" ]
                         [ div [ class "thread-messages" ]
-                            [ div [] (List.map messageView (messagesForContactId contact.id model.messages))
+                            [ loadingMessages model
+                            , div [] (List.map messageView (messagesForContactId contact.id model.messages))
+                            , messageLoadingView threadState
                             ]
                         ]
                     , div [ class "thread-footer" ]
@@ -145,9 +225,11 @@ threadView model threadState =
                                 [ input
                                     [ type_ "text"
                                     , class "message-input"
+                                    , id "message-input"
                                     , placeholder "Type your message here"
                                     , onInput (InputThreadMessage threadState)
                                     , value threadState.draftMessage
+                                    , disabled threadState.sendingMessage
                                     ]
                                     []
                                 ]
@@ -162,19 +244,30 @@ threadView model threadState =
             ]
 
 
+loadingMessages : Model -> Html Msg
+loadingMessages model =
+    if model.loadingContactMessages == True then
+        div [ class "loading-messages" ]
+            [ i [ class "fa fa-spin fa-circle-o-notch" ] []
+            , text " Loading more..."
+            ]
+    else
+        span [] []
+
+
 contactDetails : Model -> Contact -> Html Msg
 contactDetails model contact =
     let
         contactLabel =
             case contact.label of
                 "" ->
-                    h2 [ class "add-name", onClick <| StartEditingContact contact ]
+                    h2 [ class "add-name", onClick <| StartEditingContact "edit-contact-label" contact ]
                         [ i [ class "fa fa-plus" ] []
                         , text " Add Name"
                         ]
 
                 label ->
-                    h2 [ onClick <| StartEditingContact contact, class "hover-edit" ] [ text label ]
+                    h2 [ onClick <| StartEditingContact "edit-contact-label" contact, class "hover-edit" ] [ text label ]
     in
         case model.editingContact of
             True ->
@@ -185,6 +278,7 @@ contactDetails model contact =
                             , placeholder "Name"
                             , value model.contactEdits.label
                             , onInput InputContactLabel
+                            , id "edit-contact-label"
                             ]
                             []
                         , input
@@ -192,16 +286,22 @@ contactDetails model contact =
                             , placeholder "Phone number"
                             , value model.contactEdits.phoneNumber
                             , onInput InputContactPhoneNumber
+                            , id "edit-contact-phone-number"
                             ]
                             []
-                        , button [ type_ "submit" ] [ text "Submit" ]
+                        , button
+                            [ type_ "submit"
+                            , spin model.savingContactEdits
+                            , disabled model.savingContactEdits
+                            ]
+                            [ text "Submit" ]
                         ]
                     ]
 
             False ->
                 div [ class "contact-details" ]
                     [ contactLabel
-                    , h3 [ onClick <| StartEditingContact contact, class "hover-edit" ] [ text contact.phoneNumber ]
+                    , h3 [ onClick <| StartEditingContact "edit-contact-phone-number" contact, class "hover-edit" ] [ text contact.phoneNumber ]
                     ]
 
 
@@ -209,7 +309,26 @@ newContactView : Model -> Html Msg
 newContactView model =
     div [ class "thread-container" ]
         [ label [ class "compose-field" ]
-            [ input [ onInput InputContactSearch, value model.contactSearch, placeholder "Enter name or number" ] []
+            [ input
+                [ onInput InputContactSearch
+                , value model.contactSearch
+                , placeholder "Enter name or number"
+                , id "contact-search"
+                ]
+                []
             ]
         , div [] [ recipientSuggestions model ]
         ]
+
+
+userMessages : Model -> Html Msg
+userMessages model =
+    div [ class "user-messages-container" ]
+        (List.map userMessage model.userMessages)
+
+
+userMessage : UserMessage -> Html Msg
+userMessage message =
+    case message of
+        ErrorMessage e ->
+            div [ class "user-message error" ] [ text e ]

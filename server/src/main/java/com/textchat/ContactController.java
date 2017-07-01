@@ -1,15 +1,15 @@
 package com.textchat;
 
+import com.textchat.model.security.CerberusUser;
 import com.textchat.persistence.contacts.Contact;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.textmessages.ContactResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +25,10 @@ public class ContactController {
     @PostMapping("/contacts")
     @PreAuthorize("hasAuthority('USER')")
     public ContactResponse create(@RequestBody CreateContactRequest createContactRequest) {
-        Contact contact = contactRepository.save(new Contact(createContactRequest.getPhoneNumber(), ""));
+        Contact contact = new Contact(createContactRequest.getPhoneNumber(), createContactRequest.getLabel());
+        Contact savedContact = contactRepository.save(contact);
 
-        return new ContactResponse(contact);
+        return new ContactResponse(savedContact);
     }
 
     @PutMapping("/contacts")
@@ -45,7 +46,7 @@ public class ContactController {
 
     @GetMapping("/contacts")
     @PreAuthorize("hasAuthority('USER')")
-    public List<ContactResponse> search(@RequestParam String q) {
+    public List<ContactResponse> search(@RequestParam String q, Principal principal) {
         return contactRepository
                 .search(q)
                 .stream()
@@ -72,10 +73,15 @@ public class ContactController {
     }
 
     private static class CreateContactRequest {
+        private String label;
         private String phoneNumber;
 
         public String getPhoneNumber() {
             return phoneNumber;
+        }
+
+        public String getLabel() {
+            return label;
         }
     }
 }

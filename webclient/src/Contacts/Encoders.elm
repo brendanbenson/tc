@@ -4,10 +4,11 @@ import Contacts.Models exposing (Contact)
 import Json.Encode exposing (Value, object)
 
 
-createContactRequest : String -> Value
-createContactRequest phoneNumber =
+createContactRequest : String -> String -> Value
+createContactRequest label phoneNumber =
     object
-        [ ( "phoneNumber", Json.Encode.string phoneNumber )
+        [ ( "label", Json.Encode.string label )
+        , ( "phoneNumber", Json.Encode.string phoneNumber )
         ]
 
 

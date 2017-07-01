@@ -1,51 +1,51 @@
 module Contacts.Api exposing (..)
 
-import Authentication.AuthToken exposing (AuthToken)
 import Contacts.Decoders exposing (decodeContact, decodeContactList)
 import Contacts.Encoders exposing (createContactRequest, editContactRequest)
 import Contacts.Models exposing (Contact)
 import Http exposing (jsonBody)
 import HttpHelpers
 import Messages exposing (Msg(ContactCreated, EditedContact, SearchedContacts))
+import Models exposing (ConnectionData)
 
 
-search : AuthToken -> String -> Cmd Msg
-search authToken q =
+search : ConnectionData -> String -> Cmd Msg
+search connectionData q =
     let
         url =
-            "http://localhost:8080/contacts?q=" ++ Http.encodeUri q
+            "/contacts?q=" ++ Http.encodeUri q
 
         request =
-            HttpHelpers.get authToken url decodeContactList
+            HttpHelpers.get connectionData url decodeContactList
     in
-        Http.send SearchedContacts request
+        Http.send (SearchedContacts q) request
 
 
-createContact : AuthToken -> String -> Cmd Msg
-createContact authToken phoneNumber =
+createContact : ConnectionData -> (Result Http.Error Contact -> Msg) -> String -> String -> Cmd Msg
+createContact connectionData callback label phoneNumber =
     let
         url =
-            "http://localhost:8080/contacts"
+            "/contacts"
 
         requestBody =
-            jsonBody <| createContactRequest phoneNumber
+            jsonBody <| createContactRequest label phoneNumber
 
         request =
-            HttpHelpers.post authToken url requestBody decodeContact
+            HttpHelpers.post connectionData url requestBody decodeContact
     in
-        Http.send ContactCreated request
+        Http.send callback request
 
 
-editContact : AuthToken -> Contact -> Cmd Msg
-editContact authToken contact =
+editContact : ConnectionData -> Contact -> Cmd Msg
+editContact connectionData contact =
     let
         url =
-            "http://localhost:8080/contacts"
+            "/contacts"
 
         requestBody =
             jsonBody <| editContactRequest contact
 
         request =
-            HttpHelpers.put authToken url requestBody decodeContact
+            HttpHelpers.put connectionData url requestBody decodeContact
     in
         Http.send EditedContact request

@@ -33,12 +33,12 @@ h3 {
 a {
   color: $flair;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 a:hover {
   color: $primary-activate;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .main {
@@ -47,9 +47,15 @@ a:hover {
   flex-direction: column;
 
   header {
-    flex: 0 1 auto;
+    flex: 0 1 3em;
+    display: flex;
     background-color: $scuba;
     padding: 0.8em 3em;
+    min-height: 3em;
+
+    .header-main {
+      flex: 1 1 auto;
+    }
 
     h1 {
       margin: 0;
@@ -57,6 +63,17 @@ a:hover {
       cursor: default;
       font-size: 1.5rem;
       color: $simple;
+    }
+
+    a {
+      color: lighten($scuba, 25);
+      text-decoration: none;
+      padding-top: .6em;
+
+      &:hover {
+        color: lighten($scuba, 40);
+      }
+
     }
   }
 
@@ -126,10 +143,17 @@ a:hover {
         flex: 1 1 auto;
         overflow: scroll;
         border-bottom: 1px solid $simple-content;
+
+        .loading-messages {
+          text-align: center;
+          padding: 1em;
+          color: $simple-content;
+        }
       }
 
       .thread-footer {
-        flex: 0 1 8em;
+        flex: 0 1 4em;
+        min-height: 4em;
 
         .input-container {
           padding: 1em;
@@ -152,12 +176,6 @@ a:hover {
             color: $flair;
           }
         }
-
-        input {
-          border: 1px solid $simple;
-          margin: .5em 0;
-          padding: .3em 0;
-        }
       }
     }
   }
@@ -177,10 +195,17 @@ a:hover {
     color: $simple;
     float: right;
   }
+
+  &.loading {
+    background-color: lighten($scuba, 15);
+  }
 }
 
 .message-input {
   width: 100%;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .new-message {
@@ -197,5 +222,70 @@ a:hover {
       content: ' \f040';
       font-family: FontAwesome;
     }
+  }
+}
+
+.contact-suggestion {
+  padding: .5em 1em;
+  background-color: $simple;
+  border-bottom: 1px solid white;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($simple, 1);
+  }
+
+  .label {
+
+  }
+
+  .body {
+    font-weight:400;
+    color: $flair;
+  }
+
+  .loading {
+    color: $simple-content;
+  }
+}
+
+.modal-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0,0,0,.60);
+
+  .modal {
+    max-width: 40em;
+    background-color: white;
+    margin: 1em auto;
+    padding: 1em;
+    border-radius: .5em;
+    box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
+
+    .modal-close {
+      float: right;
+    }
+  }
+}
+
+.user-messages-container {
+  position: absolute;
+  bottom: 4em;
+  left: 0;
+  z-index: 10;
+}
+
+.user-message {
+  margin: 1em;
+  padding: 1em;
+  border-radius: .5em;
+  box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
+  background-color: $simple;
+
+  &.error {
+    border-left: .5em solid $flair;
   }
 }

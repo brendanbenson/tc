@@ -2,9 +2,10 @@ module Main exposing (..)
 
 import Contacts.Models exposing (emptyContact)
 import Dict
+import DomUtils exposing (focus)
 import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState, Workflow(NewContact), newThreadState)
+import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(NewContact), newThreadState)
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(..), newUrl)
@@ -24,20 +25,32 @@ main =
         }
 
 
-initialModel : Maybe String -> Route -> Model
-initialModel authToken route =
+initialModel : Flags -> Route -> Model
+initialModel flags route =
     { contactSearch = ""
     , messages = []
+    , loadingContactMessages = False
     , contactSuggestions = []
+    , loadingContactSuggestions = False
     , workflow = NewContact
     , contacts = Dict.empty
     , editingContact = False
     , contactEdits = emptyContact
+    , savingContactEdits = False
+    , createContactModalOpen = False
+    , createContactName = ""
+    , createContactPhoneNumber = ""
+    , creatingFullContact = False
     , username = ""
     , password = ""
-    , authToken = authToken
+    , connectionData =
+        { authToken = flags.authToken
+        , baseUrl = flags.baseUrl
+        }
     , authError = False
+    , sendingAuth = False
     , route = route
+    , userMessages = []
     }
 
 
@@ -47,6 +60,7 @@ initialModel authToken route =
 
 type alias Flags =
     { authToken : Maybe String
+    , baseUrl : String
     }
 
 
@@ -57,9 +71,9 @@ init flags location =
             Routing.parseLocation location
 
         model =
-            initialModel flags.authToken currentRoute
+            initialModel flags currentRoute
     in
-        case model.authToken of
+        case model.connectionData.authToken of
             Nothing ->
                 { model | route = LoginRoute } ! [ newUrl LoginRoute ]
 
@@ -68,7 +82,15 @@ init flags location =
                     DashboardRoute ->
                         model
                             ! [ subscribeToTextMessages ()
-                              , fetchLatestThreads model.authToken
+                              , fetchLatestThreads model.connectionData
+                              , focus "contact-search"
+                              ]
+
+                    LoginRoute ->
+                        { model | route = DashboardRoute }
+                            ! [ subscribeToTextMessages ()
+                              , fetchLatestThreads model.connectionData
+                              , focus "contact-search"
                               ]
 
                     _ ->

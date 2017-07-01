@@ -8,25 +8,28 @@ class TextMessageResponse {
     private Boolean incoming;
     private ContactResponse toContact;
     private ContactResponse fromContact;
+    private Boolean read;
 
     public TextMessageResponse() {
     }
 
-    public TextMessageResponse(Long id, String body, Boolean incoming, ContactResponse toContact, ContactResponse fromContact) {
+    public TextMessageResponse(Long id, String body, Boolean incoming, ContactResponse toContact, ContactResponse fromContact, Boolean read) {
         this.id = id;
         this.body = body;
         this.incoming = incoming;
         this.toContact = toContact;
         this.fromContact = fromContact;
+        this.read = read;
     }
 
-    public TextMessageResponse(TextMessage textMessage) {
+    public TextMessageResponse(TextMessage textMessage, Boolean read) {
         this(
                 textMessage.getId(),
                 textMessage.getBody(),
                 textMessage.getIncoming(),
                 new ContactResponse(textMessage.getToContact()),
-                new ContactResponse(textMessage.getFromContact())
+                new ContactResponse(textMessage.getFromContact()),
+                read
         );
     }
 
@@ -48,6 +51,10 @@ class TextMessageResponse {
 
     public ContactResponse getFromContact() {
         return fromContact;
+    }
+
+    public Boolean getRead() {
+        return read;
     }
 
     @Override

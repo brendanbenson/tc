@@ -1,22 +1,23 @@
 module Update exposing (..)
 
 import Authentication.Api exposing (authenticate)
-import Contacts.Api exposing (createContact, editContact)
-import Contacts.Helpers exposing (getContact, updateContact, updateContacts)
-import Contacts.Models exposing (ContactId)
-import Dom.Scroll
+import Contacts.Api exposing (editContact)
+import Contacts.Helpers exposing (getContact)
+import Contacts.Models exposing (Contact, ContactId)
+import DomUtils exposing (focus)
+import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout))
 import Json.Decode exposing (decodeString)
 import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
-import Models exposing (Model, Workflow(NewContact, Thread), newThreadState)
-import Ports exposing (saveAuthToken, subscribeToTextMessages)
+import Models exposing (Model, UserMessage(ErrorMessage), Workflow(NewContact, Thread), newThreadState)
+import Ports exposing (saveAuthToken, subscribeToTextMessages, unsubscribeFromTextMessages)
 import Routing exposing (Route(DashboardRoute, LoginRoute), newUrl, parseLocation)
 import String exposing (isEmpty)
-import Task
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, sendContactMessage)
 import TextMessages.Decoders exposing (decodeTextMessage)
 import TextMessages.Helpers
+import TextMessages.Models exposing (TextMessage)
 import Time exposing (millisecond)
 
 
@@ -30,81 +31,78 @@ update msg model =
                 { model | contactSearch = newPhoneNumber }
                     ! [ delay (Time.millisecond * 200) <| SearchContacts newPhoneNumber ]
 
-        SearchContacts phoneNumberToSearch ->
+        SearchContacts contactSearch ->
             let
                 cmd =
                     if
                         model.contactSearch
-                            == phoneNumberToSearch
-                            && (phoneNumberToSearch |> not << isEmpty)
+                            == contactSearch
+                            && (contactSearch |> not << isEmpty)
                     then
-                        Contacts.Api.search model.authToken model.contactSearch
+                        Contacts.Api.search model.connectionData model.contactSearch
                     else
                         Cmd.none
             in
-                model ! [ cmd ]
+                { model | loadingContactSuggestions = True } ! [ cmd ]
 
-        SearchedContacts (Ok contacts) ->
-            { model
-                | contactSuggestions = List.map .id contacts
-                , contacts = updateContacts model.contacts contacts
-            }
-                ! []
+        SearchedContacts q (Ok contacts) ->
+            if model.contactSearch == q then
+                from
+                    { model
+                        | contactSuggestions = List.map .id contacts
+                        , loadingContactSuggestions = False
+                    }
+                    |> updateContacts contacts
+            else
+                from model
 
-        SearchedContacts (Err _) ->
-            model ! []
+        SearchedContacts q (Err e) ->
+            if model.contactSearch == q then
+                { model | loadingContactSuggestions = False } ! [] |> addHttpError e
+            else
+                from model
 
         FetchedLatestThreads (Ok messages) ->
             let
                 allContacts =
                     List.concat [ List.map .toContact messages, List.map .fromContact messages ]
             in
-                { model
-                    | messages = TextMessages.Helpers.addMessages model.messages messages
-                    , contacts = Contacts.Helpers.updateContacts model.contacts allContacts
-                }
-                    ! []
+                from model |> updateContacts allContacts |> addMessages messages
 
-        FetchedLatestThreads (Err _) ->
-            model ! []
+        FetchedLatestThreads (Err e) ->
+            from model |> addHttpError e
 
         ReceiveMessages textMessageResponse ->
             case decodeString decodeTextMessage textMessageResponse of
                 Ok textMessage ->
-                    let
-                        allContacts =
-                            [ textMessage.toContact, textMessage.fromContact ]
-
-                        contacts =
-                            Contacts.Helpers.updateContacts model.contacts allContacts
-
-                        updatedMessages =
-                            TextMessages.Helpers.addMessages model.messages [ textMessage ]
-                    in
-                        { model | messages = updatedMessages, contacts = contacts }
-                            ! [ scrollToBottom ]
+                    from model
+                        |> addMessage textMessage
+                        |> updateContacts [ textMessage.toContact, textMessage.fromContact ]
+                        |> scrollToBottom "thread-body"
 
                 Err e ->
+                    -- TODO: handle errors
                     Debug.log e <| model ! []
 
         OpenThread contactId ->
-            { model | contactSearch = "", contactSuggestions = [] } ! [ scrollToBottom ] |> openThread contactId
+            from { model | contactSearch = "", contactSuggestions = [] }
+                |> scrollToBottom "thread-body"
+                |> openThread contactId
 
         StartComposing ->
-            { model | workflow = NewContact } ! []
+            from { model | workflow = NewContact } |> focus "contact-search"
 
         CreateContact phoneNumber ->
-            model ! [ createContact model.authToken phoneNumber ]
+            from model |> createContact ContactCreated "" phoneNumber
 
         ContactCreated (Ok contact) ->
-            { model | contacts = updateContact contact model.contacts } ! [] |> openThread contact.id
+            from model |> updateContact contact |> openThread contact.id
 
         ContactCreated (Err e) ->
-            -- TODO: implement error handling
-            model ! []
+            from model |> addHttpError e
 
-        StartEditingContact contact ->
-            { model | editingContact = True, contactEdits = contact } ! []
+        StartEditingContact id contact ->
+            from { model | editingContact = True, contactEdits = contact } |> focus id
 
         InputContactLabel label ->
             let
@@ -121,39 +119,84 @@ update msg model =
                 { model | contactEdits = { originalContactEdits | phoneNumber = phoneNumber } } ! []
 
         EditContact contact ->
-            model ! [ editContact model.authToken contact ]
+            { model | savingContactEdits = True } ! [ editContact model.connectionData contact ]
 
         EditedContact (Ok contact) ->
-            { model | editingContact = False, contacts = updateContact contact model.contacts } ! []
+            from { model | savingContactEdits = False, editingContact = False } |> updateContact contact
 
         EditedContact (Err e) ->
-            -- TODO: implement error handling
-            model ! []
+            from { model | savingContactEdits = False } |> addHttpError e
+
+        OpenCreateContactModal name ->
+            from
+                { model
+                    | createContactModalOpen = True
+                    , createContactName = name
+                    , createContactPhoneNumber = ""
+                }
+                |> focus "create-contact-phone-number"
+
+        CloseCreateContactModal ->
+            { model | createContactModalOpen = False } ! []
+
+        InputCreateContactName name ->
+            { model | createContactName = name } ! []
+
+        InputCreateContactPhoneNumber phoneNumber ->
+            { model | createContactPhoneNumber = phoneNumber } ! []
+
+        CreateFullContact label phoneNumber ->
+            from { model | creatingFullContact = True }
+                |> createContact FullContactCreated label phoneNumber
+
+        FullContactCreated (Ok contact) ->
+            from
+                { model | creatingFullContact = False }
+                |> updateContact contact
+                |> closeCreateContactModal
+                |> openThread contact.id
+
+        FullContactCreated (Err e) ->
+            from { model | creatingFullContact = False } |> addHttpError e
 
         FetchedTextMessagesForContact (Ok fetchedMessages) ->
-            { model | messages = TextMessages.Helpers.addMessages model.messages fetchedMessages }
-                ! [ scrollToBottom ]
+            from { model | loadingContactMessages = False }
+                |> addMessages fetchedMessages
+                |> scrollToBottom "thread-body"
 
-        FetchedTextMessagesForContact (Err _) ->
-            model ! []
+        FetchedTextMessagesForContact (Err e) ->
+            { model | loadingContactMessages = False } ! [] |> addHttpError e
 
         InputThreadMessage threadState messageBody ->
             { model | workflow = Thread { threadState | draftMessage = messageBody } }
                 ! []
 
         SendMessage threadState ->
-            let
-                contact =
-                    getContact model.contacts threadState.to
-            in
-                { model | workflow = Thread { threadState | draftMessage = "" } }
-                    ! [ sendContactMessage model.authToken contact.id threadState.draftMessage SentMessage ]
+            { model | workflow = Thread { threadState | sendingMessage = True } }
+                ! [ sendContactMessage
+                        model.connectionData
+                        threadState.to
+                        threadState.draftMessage
+                        (SentMessage threadState)
+                  ]
+                |> scrollToBottom "thread-body"
 
-        SentMessage (Ok textMessage) ->
-            { model | messages = TextMessages.Helpers.addMessages model.messages [ textMessage ] } ! []
+        SentMessage threadState (Ok textMessage) ->
+            from
+                { model
+                    | workflow =
+                        Thread
+                            { threadState
+                                | draftMessage = ""
+                                , sendingMessage = False
+                            }
+                }
+                |> scrollToBottom "thread-body"
+                |> addMessage textMessage
 
-        SentMessage (Err e) ->
-            model ! []
+        SentMessage threadState (Err e) ->
+            from { model | workflow = Thread { threadState | sendingMessage = False } }
+                |> addHttpError e
 
         OnLocationChange location ->
             case parseLocation location of
@@ -170,21 +213,54 @@ update msg model =
             { model | password = newPassword } ! []
 
         SubmitLogin ->
-            ( model, authenticate model )
+            { model | sendingAuth = True } ! [ authenticate model ]
 
         SubmittedLogin (Ok authenticationResponse) ->
             let
                 authToken =
                     Just authenticationResponse.token
+
+                currentConnectionData =
+                    model.connectionData
+
+                newConnectionData =
+                    { currentConnectionData | authToken = authToken }
             in
-                { model | authToken = authToken }
-                    ! [ newUrl DashboardRoute, saveAuthToken authToken, fetchLatestThreads authToken ]
+                { model | connectionData = newConnectionData, sendingAuth = False }
+                    ! [ newUrl DashboardRoute
+                      , saveAuthToken authToken
+                      , fetchLatestThreads newConnectionData
+                      ]
+                    |> focus "contact-search"
 
         SubmittedLogin (Err _) ->
-            { model | authError = True } ! []
+            from { model | authError = True, sendingAuth = False }
+
+        LogOut ->
+            let
+                currentConnectionData =
+                    model.connectionData
+            in
+                { model | connectionData = { currentConnectionData | authToken = Nothing } }
+                    ! [ newUrl LoginRoute
+                      , saveAuthToken Nothing
+                      , unsubscribeFromTextMessages ()
+                      ]
+
+        UserMessageExpired ->
+            from
+                { model
+                    | userMessages =
+                        List.take (List.length model.userMessages - 1) model.userMessages
+                }
 
         NoOp ->
-            model ! []
+            from model
+
+
+from : Model -> ( Model, Cmd Msg )
+from model =
+    model ! []
 
 
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -192,10 +268,95 @@ openThread contactId ( model, cmd ) =
     { model
         | workflow = Thread (newThreadState contactId)
         , editingContact = False
+        , loadingContactMessages = True
     }
-        ! [ cmd, fetchListForContact model.authToken contactId ]
+        ! [ cmd, fetchListForContact model.connectionData contactId ]
+        |> focus "message-input"
 
 
-scrollToBottom : Cmd Msg
-scrollToBottom =
-    Task.attempt (always NoOp) <| Dom.Scroll.toBottom "thread-body"
+closeCreateContactModal : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+closeCreateContactModal ( model, cmd ) =
+    { model | createContactModalOpen = False } ! [ cmd ]
+
+
+createContact : (Result Http.Error Contact -> Msg) -> String -> String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+createContact callback label phoneNumber ( model, cmd ) =
+    model ! [ cmd, Contacts.Api.createContact model.connectionData callback label phoneNumber ]
+
+
+updateContact : Contact -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+updateContact contact ( model, cmd ) =
+    { model | contacts = Contacts.Helpers.updateContact contact model.contacts } ! [ cmd ]
+
+
+updateContacts : List Contact -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+updateContacts contacts ( model, cmd ) =
+    { model | contacts = Contacts.Helpers.updateContacts model.contacts contacts } ! [ cmd ]
+
+
+addHttpError : Http.Error -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+addHttpError e ( model, cmd ) =
+    let
+        removeCmd =
+            delay (Time.millisecond * 5000) <| UserMessageExpired
+    in
+        case e of
+            BadUrl errorMessage ->
+                Debug.log errorMessage
+                    ({ model
+                        | userMessages =
+                            (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
+                     }
+                        ! [ cmd, removeCmd ]
+                    )
+
+            Timeout ->
+                { model
+                    | userMessages =
+                        (ErrorMessage "An network timeout occurred. Please try again.") :: model.userMessages
+                }
+                    ! [ cmd, removeCmd ]
+
+            NetworkError ->
+                { model
+                    | userMessages =
+                        (ErrorMessage "An network error occurred. Please check your connection and try again.")
+                            :: model.userMessages
+                }
+                    ! [ cmd, removeCmd ]
+
+            BadStatus response ->
+                { model
+                    | userMessages =
+                        (ErrorMessage "The action failed. Please try again.") :: model.userMessages
+                }
+                    ! [ cmd, removeCmd ]
+
+            BadPayload errorMessage response ->
+                Debug.log errorMessage
+                    ({ model
+                        | userMessages =
+                            (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
+                     }
+                        ! [ cmd, removeCmd ]
+                    )
+
+
+addMessages : List TextMessage -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+addMessages messages ( model, cmd ) =
+    { model | messages = TextMessages.Helpers.addMessages model.messages messages } ! [ cmd ]
+
+
+addMessage : TextMessage -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+addMessage message ( model, cmd ) =
+    { model | messages = TextMessages.Helpers.addMessage message model.messages } ! [ cmd ]
+
+
+scrollToBottom : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+scrollToBottom id ( model, cmd ) =
+    model ! [ cmd, DomUtils.scrollToBottom id ]
+
+
+focus : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+focus id ( model, cmd ) =
+    model ! [ cmd, DomUtils.focus id ]

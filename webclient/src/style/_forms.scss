@@ -5,10 +5,12 @@ input {
   color: $content;
   display:block;
   width:100%;
-  padding:0;
-  border-width:0;
+  border: 1px solid $simple;
+  margin: .5em 0;
+  padding: .5em;
+  box-sizing: border-box;
 
-  &::placeholder {
+  &::placeholder, &:disabled {
     color: $simple-content;
   }
 }
@@ -28,12 +30,18 @@ button {
   border-radius: .5em;
   font-weight: 300;
   text-decoration: none;
+  transition: all 0.5s ease;
 
   &:hover, &:focus {
     background-color: darken($flair, 7);
     text-decoration: none;
     color: $simple;
     box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
+    transition: all 0.5s ease;
+  }
+
+  &:disabled {
+    background-color: lighten($flair, 15);
   }
 
   &.feature {
@@ -67,6 +75,7 @@ button {
     margin: .15em .3em 0 .7em;
     color: $content;
     width: auto;
+    padding: 0;
 
     &::placeholder {
       color: $simple-content;

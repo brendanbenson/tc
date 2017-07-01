@@ -1,9 +1,11 @@
 package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
+import com.textchat.persistence.contacts.ContactReadRepository;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.persistence.textmessages.TextMessage;
 import com.textchat.persistence.textmessages.TextMessageRepository;
+import com.textchat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 public class TextMessagesController {
     private TextMessageRepository textMessageRepository;
     private ContactRepository contactRepository;
+    private ContactReadRepository contactReadRepository;
     private SimpMessagingTemplate simpMessagingTemplate;
     private TextMessageService textMessageService;
 
@@ -25,11 +28,13 @@ public class TextMessagesController {
     public TextMessagesController(
             TextMessageRepository textMessageRepository,
             ContactRepository contactRepository,
+            ContactReadRepository contactReadRepository,
             SimpMessagingTemplate simpMessagingTemplate,
             TextMessageService textMessageService
     ) {
         this.textMessageRepository = textMessageRepository;
         this.contactRepository = contactRepository;
+        this.contactReadRepository = contactReadRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.textMessageService = textMessageService;
     }
@@ -37,10 +42,12 @@ public class TextMessagesController {
     @GetMapping("/text-messages")
     @PreAuthorize("hasAuthority('USER')")
     public List<TextMessageResponse> list() {
-        return textMessageRepository
-                .findLatestThreads()
+        List<TextMessage> latestThreads = textMessageRepository
+                .findLatestThreads();
+
+        return latestThreads
                 .stream()
-                .map(TextMessageResponse::new)
+                .map(textMessage -> new TextMessageResponse(textMessage, false)) // TODO
                 .collect(toList());
     }
 
@@ -53,21 +60,8 @@ public class TextMessagesController {
                 .findAllByToContactOrFromContactOrderByCreatedAtDesc(contact, contact);
         return stuff
                 .stream()
-                .map(TextMessageResponse::new)
+                .map(textMessage -> new TextMessageResponse(textMessage, false)) // TODO
                 .collect(toList());
-    }
-
-    @PostMapping("/text-messages")
-    @PreAuthorize("hasAuthority('USER')")
-    public TextMessageResponse create(@RequestBody SendMessageRequest sendMessageRequest) {
-        TextMessage textMessage = textMessageService.send(
-                sendMessageRequest.getToPhoneNumber(),
-                sendMessageRequest.getBody()
-        );
-
-        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
-
-        return new TextMessageResponse(textMessage);
     }
 
     @PostMapping("/contacts/{contactId}/text-messages")
@@ -85,7 +79,7 @@ public class TextMessagesController {
 
         simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
 
-        return new TextMessageResponse(textMessage);
+        return new TextMessageResponse(textMessage, false); // TODO
     }
 
     // TODO: add some security here so random people can't hit this endpoint

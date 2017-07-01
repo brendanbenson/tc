@@ -19,7 +19,7 @@ public class ServerApplication {
             @Value("${twilio.accountSid}") String twilioAccountSid,
             @Value("${twilio.authToken}") String twilioAuthToken
     ) {
-        return new TwilioTextMessageGateway(twilioAccountSid, twilioAuthToken);
-//        return new NullTextMessageGateway();
+//        return new TwilioTextMessageGateway(twilioAccountSid, twilioAuthToken);
+        return new NullTextMessageGateway();
     }
 }

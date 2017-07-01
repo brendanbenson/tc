@@ -4,14 +4,15 @@ import Authentication.AuthToken exposing (AuthToken)
 import Http exposing (Body, Header, Request, emptyBody, expectJson, expectStringResponse, header, request)
 import Json.Decode
 import Maybe exposing (withDefault)
+import Models exposing (ConnectionData)
 
 
-put : AuthToken -> String -> Body -> Json.Decode.Decoder a -> Request a
-put authToken url body decoder =
+put : ConnectionData -> String -> Body -> Json.Decode.Decoder a -> Request a
+put connectionData url body decoder =
     request
         { method = "PUT"
-        , headers = [ authHeader authToken ]
-        , url = url
+        , headers = [ authHeader connectionData.authToken ]
+        , url = connectionData.baseUrl ++ url
         , body = body
         , expect = expectJson decoder
         , timeout = Nothing
@@ -19,12 +20,12 @@ put authToken url body decoder =
         }
 
 
-post : AuthToken -> String -> Body -> Json.Decode.Decoder a -> Request a
-post authToken url body decoder =
+post : ConnectionData -> String -> Body -> Json.Decode.Decoder a -> Request a
+post connectionData url body decoder =
     request
         { method = "POST"
-        , headers = [ authHeader authToken ]
-        , url = url
+        , headers = [ authHeader connectionData.authToken ]
+        , url = connectionData.baseUrl ++ url
         , body = body
         , expect = expectJson decoder
         , timeout = Nothing
@@ -32,12 +33,12 @@ post authToken url body decoder =
         }
 
 
-get : AuthToken -> String -> Json.Decode.Decoder a -> Request a
-get authToken url decoder =
+get : ConnectionData -> String -> Json.Decode.Decoder a -> Request a
+get connectionData url decoder =
     request
         { method = "GET"
-        , headers = [ authHeader authToken ]
-        , url = url
+        , headers = [ authHeader connectionData.authToken ]
+        , url = connectionData.baseUrl ++ url
         , body = emptyBody
         , expect = expectJson decoder
         , timeout = Nothing
