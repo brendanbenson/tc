@@ -21,7 +21,7 @@ view model =
             [ div [ class "header-main" ]
                 [ h1 [ class "app-title" ] [ text "TextChat" ]
                 ]
-            , a [ onClick LogOut, class "log-out" ] [ text "Log Out" ]
+            , a [ href "/logout", class "log-out" ] [ text "Log Out" ]
             ]
         , div [ class "dashboard" ]
             [ div [ class "latest-messages-container" ]

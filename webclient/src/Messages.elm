@@ -50,9 +50,8 @@ type
     | NoOp
     | UserMessageExpired
       --
-      -- Login
+      -- Login (may get removed)
     | InputUsername String
     | InputPassword String
     | SubmitLogin
     | SubmittedLogin (Result Http.Error AuthenticationResponse)
-    | LogOut

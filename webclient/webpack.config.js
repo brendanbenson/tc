@@ -48,6 +48,12 @@ module.exports = {
     devServer: {
         inline: true,
         stats: {colors: true},
+        proxy: {
+            '/': {
+                target: 'http://localhost:8080',
+                secure: false
+            }
+        }
     },
 
 

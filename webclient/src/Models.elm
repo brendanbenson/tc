@@ -25,7 +25,6 @@ type alias Model =
     , route : Route
     , username : String
     , password : String
-    , connectionData : ConnectionData
     , authError : Bool
     , sendingAuth : Bool
     , userMessages : List UserMessage
@@ -58,9 +57,3 @@ newThreadState contactId =
 
 type alias ContactId =
     Int
-
-
-type alias ConnectionData =
-    { authToken : AuthToken
-    , baseUrl : String
-    }

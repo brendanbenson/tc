@@ -35,7 +35,7 @@ dependencies {
     compile('com.twilio.sdk:twilio:7.11.0')
     compile('org.springframework.boot:spring-boot-starter-websocket')
     compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.mobile:spring-mobile-device')
+    compile('org.springframework.security.oauth:spring-security-oauth2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -43,3 +43,10 @@ flyway {
     url = 'jdbc:postgresql://localhost:5432/textchat'
     user = 'textchat'
 }
+
+task copyFrontEnd(type: Copy) {
+    from "../webclient/dist"
+    into "build/resources/main/public/"
+}
+
+processResources.dependsOn('copyFrontEnd')

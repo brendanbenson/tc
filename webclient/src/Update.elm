@@ -7,10 +7,9 @@ import Contacts.Models exposing (Contact, ContactId)
 import DomUtils exposing (focus)
 import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout))
 import Json.Decode exposing (decodeString)
-import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
 import Models exposing (Model, UserMessage(ErrorMessage), Workflow(NewContact, Thread), newThreadState)
-import Ports exposing (saveAuthToken, subscribeToTextMessages, unsubscribeFromTextMessages)
+import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(DashboardRoute, LoginRoute), newUrl, parseLocation)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
@@ -39,7 +38,7 @@ update msg model =
                             == contactSearch
                             && (contactSearch |> not << isEmpty)
                     then
-                        Contacts.Api.search model.connectionData model.contactSearch
+                        Contacts.Api.search model.contactSearch
                     else
                         Cmd.none
             in
@@ -81,8 +80,7 @@ update msg model =
                         |> scrollToBottom "thread-body"
 
                 Err e ->
-                    -- TODO: handle errors
-                    Debug.log e <| model ! []
+                    Debug.log e <| (from model |> addStringError "An error occurred while receiving text messages.")
 
         OpenThread contactId ->
             from { model | contactSearch = "", contactSuggestions = [] }
@@ -119,7 +117,7 @@ update msg model =
                 { model | contactEdits = { originalContactEdits | phoneNumber = phoneNumber } } ! []
 
         EditContact contact ->
-            { model | savingContactEdits = True } ! [ editContact model.connectionData contact ]
+            { model | savingContactEdits = True } ! [ editContact contact ]
 
         EditedContact (Ok contact) ->
             from { model | savingContactEdits = False, editingContact = False } |> updateContact contact
@@ -174,7 +172,6 @@ update msg model =
         SendMessage threadState ->
             { model | workflow = Thread { threadState | sendingMessage = True } }
                 ! [ sendContactMessage
-                        model.connectionData
                         threadState.to
                         threadState.draftMessage
                         (SentMessage threadState)
@@ -216,36 +213,11 @@ update msg model =
             { model | sendingAuth = True } ! [ authenticate model ]
 
         SubmittedLogin (Ok authenticationResponse) ->
-            let
-                authToken =
-                    Just authenticationResponse.token
-
-                currentConnectionData =
-                    model.connectionData
-
-                newConnectionData =
-                    { currentConnectionData | authToken = authToken }
-            in
-                { model | connectionData = newConnectionData, sendingAuth = False }
-                    ! [ newUrl DashboardRoute
-                      , saveAuthToken authToken
-                      , fetchLatestThreads newConnectionData
-                      ]
-                    |> focus "contact-search"
+            -- TODO: remove this
+            model ! []
 
         SubmittedLogin (Err _) ->
             from { model | authError = True, sendingAuth = False }
-
-        LogOut ->
-            let
-                currentConnectionData =
-                    model.connectionData
-            in
-                { model | connectionData = { currentConnectionData | authToken = Nothing } }
-                    ! [ newUrl LoginRoute
-                      , saveAuthToken Nothing
-                      , unsubscribeFromTextMessages ()
-                      ]
 
         UserMessageExpired ->
             from
@@ -270,7 +242,7 @@ openThread contactId ( model, cmd ) =
         , editingContact = False
         , loadingContactMessages = True
     }
-        ! [ cmd, fetchListForContact model.connectionData contactId ]
+        ! [ cmd, fetchListForContact contactId ]
         |> focus "message-input"
 
 
@@ -281,7 +253,7 @@ closeCreateContactModal ( model, cmd ) =
 
 createContact : (Result Http.Error Contact -> Msg) -> String -> String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 createContact callback label phoneNumber ( model, cmd ) =
-    model ! [ cmd, Contacts.Api.createContact model.connectionData callback label phoneNumber ]
+    model ! [ cmd, Contacts.Api.createContact callback label phoneNumber ]
 
 
 updateContact : Contact -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -294,52 +266,59 @@ updateContacts contacts ( model, cmd ) =
     { model | contacts = Contacts.Helpers.updateContacts model.contacts contacts } ! [ cmd ]
 
 
+removeUserMessageCmd : Cmd Msg
+removeUserMessageCmd =
+    delay (Time.millisecond * 5000) <| UserMessageExpired
+
+
 addHttpError : Http.Error -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 addHttpError e ( model, cmd ) =
-    let
-        removeCmd =
-            delay (Time.millisecond * 5000) <| UserMessageExpired
-    in
-        case e of
-            BadUrl errorMessage ->
-                Debug.log errorMessage
-                    ({ model
-                        | userMessages =
-                            (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
-                     }
-                        ! [ cmd, removeCmd ]
-                    )
-
-            Timeout ->
-                { model
+    case e of
+        BadUrl errorMessage ->
+            Debug.log errorMessage
+                ({ model
                     | userMessages =
-                        (ErrorMessage "An network timeout occurred. Please try again.") :: model.userMessages
-                }
-                    ! [ cmd, removeCmd ]
+                        (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
+                 }
+                    ! [ cmd, removeUserMessageCmd ]
+                )
 
-            NetworkError ->
-                { model
+        Timeout ->
+            { model
+                | userMessages =
+                    (ErrorMessage "An network timeout occurred. Please try again.") :: model.userMessages
+            }
+                ! [ cmd, removeUserMessageCmd ]
+
+        NetworkError ->
+            { model
+                | userMessages =
+                    (ErrorMessage "An network error occurred. Please check your connection and try again.")
+                        :: model.userMessages
+            }
+                ! [ cmd, removeUserMessageCmd ]
+
+        BadStatus response ->
+            { model
+                | userMessages =
+                    (ErrorMessage "The action failed. Please try again.") :: model.userMessages
+            }
+                ! [ cmd, removeUserMessageCmd ]
+
+        BadPayload errorMessage response ->
+            Debug.log errorMessage
+                ({ model
                     | userMessages =
-                        (ErrorMessage "An network error occurred. Please check your connection and try again.")
-                            :: model.userMessages
-                }
-                    ! [ cmd, removeCmd ]
+                        (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
+                 }
+                    ! [ cmd, removeUserMessageCmd ]
+                )
 
-            BadStatus response ->
-                { model
-                    | userMessages =
-                        (ErrorMessage "The action failed. Please try again.") :: model.userMessages
-                }
-                    ! [ cmd, removeCmd ]
 
-            BadPayload errorMessage response ->
-                Debug.log errorMessage
-                    ({ model
-                        | userMessages =
-                            (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
-                     }
-                        ! [ cmd, removeCmd ]
-                    )
+addStringError : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+addStringError e ( model, cmd ) =
+    { model | userMessages = ErrorMessage e :: model.userMessages }
+        ! [ cmd, removeUserMessageCmd ]
 
 
 addMessages : List TextMessage -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )

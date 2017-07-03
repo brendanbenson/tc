@@ -3,7 +3,6 @@ module Main exposing (..)
 import Contacts.Models exposing (emptyContact)
 import Dict
 import DomUtils exposing (focus)
-import Maybe exposing (withDefault)
 import Messages exposing (Msg(..))
 import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(NewContact), newThreadState)
 import Navigation exposing (Location)
@@ -15,9 +14,9 @@ import Platform.Cmd exposing (Cmd)
 import TextMessages.Api exposing (fetchLatestThreads, fetchLatestThreads, fetchListForContact)
 
 
-main : Program Flags Model Msg
+main : Program Never Model Msg
 main =
-    Navigation.programWithFlags OnLocationChange
+    Navigation.program OnLocationChange
         { init = init
         , view = view
         , update = update
@@ -25,8 +24,8 @@ main =
         }
 
 
-initialModel : Flags -> Route -> Model
-initialModel flags route =
+initialModel : Route -> Model
+initialModel route =
     { contactSearch = ""
     , messages = []
     , loadingContactMessages = False
@@ -43,10 +42,6 @@ initialModel flags route =
     , creatingFullContact = False
     , username = ""
     , password = ""
-    , connectionData =
-        { authToken = flags.authToken
-        , baseUrl = flags.baseUrl
-        }
     , authError = False
     , sendingAuth = False
     , route = route
@@ -54,47 +49,32 @@ initialModel flags route =
     }
 
 
-
--- TODO: use a JSON decoder for Flags
-
-
-type alias Flags =
-    { authToken : Maybe String
-    , baseUrl : String
-    }
-
-
-init : Flags -> Location -> ( Model, Cmd Msg )
-init flags location =
+init : Location -> ( Model, Cmd Msg )
+init location =
     let
         currentRoute =
             Routing.parseLocation location
 
         model =
-            initialModel flags currentRoute
+            initialModel currentRoute
     in
-        case model.connectionData.authToken of
-            Nothing ->
-                { model | route = LoginRoute } ! [ newUrl LoginRoute ]
+        case currentRoute of
+            DashboardRoute ->
+                model
+                    ! [ subscribeToTextMessages ()
+                      , fetchLatestThreads
+                      , focus "contact-search"
+                      ]
 
-            Just _ ->
-                case currentRoute of
-                    DashboardRoute ->
-                        model
-                            ! [ subscribeToTextMessages ()
-                              , fetchLatestThreads model.connectionData
-                              , focus "contact-search"
-                              ]
+            LoginRoute ->
+                { model | route = DashboardRoute }
+                    ! [ subscribeToTextMessages ()
+                      , fetchLatestThreads
+                      , focus "contact-search"
+                      ]
 
-                    LoginRoute ->
-                        { model | route = DashboardRoute }
-                            ! [ subscribeToTextMessages ()
-                              , fetchLatestThreads model.connectionData
-                              , focus "contact-search"
-                              ]
-
-                    _ ->
-                        model ! []
+            _ ->
+                model ! []
 
 
 subscriptions : Model -> Sub Msg

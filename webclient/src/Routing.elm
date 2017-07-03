@@ -34,10 +34,10 @@ toUrl route =
         hashPage =
             case route of
                 LoginRoute ->
-                    "/"
+                    "/login"
 
                 DashboardRoute ->
-                    "/dashboard"
+                    "/"
 
                 NotFoundRoute ->
                     "/not-found"

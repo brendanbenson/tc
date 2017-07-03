@@ -1,7 +1,7 @@
 module Authentication.Login exposing (..)
 
 import Html exposing (Html, button, div, fieldset, form, h2, input, label, span, text)
-import Html.Attributes exposing (class, disabled, placeholder, type_)
+import Html.Attributes exposing (attribute, class, disabled, id, placeholder, type_)
 import Html.Events exposing (onInput, onSubmit)
 import HtmlUtils exposing (spin)
 import Messages exposing (Msg(InputPassword, InputUsername, SubmitLogin))

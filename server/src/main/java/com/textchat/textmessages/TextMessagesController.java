@@ -5,10 +5,8 @@ import com.textchat.persistence.contacts.ContactReadRepository;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.persistence.textmessages.TextMessage;
 import com.textchat.persistence.textmessages.TextMessageRepository;
-import com.textchat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +38,6 @@ public class TextMessagesController {
     }
 
     @GetMapping("/text-messages")
-    @PreAuthorize("hasAuthority('USER')")
     public List<TextMessageResponse> list() {
         List<TextMessage> latestThreads = textMessageRepository
                 .findLatestThreads();
@@ -52,20 +49,17 @@ public class TextMessagesController {
     }
 
     @GetMapping("/contacts/{contactId}/text-messages")
-    @PreAuthorize("hasAuthority('USER')")
     public List<TextMessageResponse> listTextMessagesForContact(@PathVariable Long contactId) {
         Contact contact = contactRepository.findOne(contactId);
 
-        List<TextMessage> stuff = textMessageRepository
-                .findAllByToContactOrFromContactOrderByCreatedAtDesc(contact, contact);
-        return stuff
+        return textMessageRepository
+                .findAllByToContactOrFromContactOrderByCreatedAtDesc(contact, contact)
                 .stream()
                 .map(textMessage -> new TextMessageResponse(textMessage, false)) // TODO
                 .collect(toList());
     }
 
     @PostMapping("/contacts/{contactId}/text-messages")
-    @PreAuthorize("hasAuthority('USER')")
     public TextMessageResponse createForContact(
             @RequestBody SendContactMessageRequest sendContactMessageRequest,
             @PathVariable Long contactId
@@ -84,7 +78,6 @@ public class TextMessagesController {
 
     // TODO: add some security here so random people can't hit this endpoint
     @PostMapping("/receive-sms")
-    @PreAuthorize("permitAll()")
     public void receiveTextMessage(HttpServletRequest httpServletRequest) {
         String body = httpServletRequest.getParameter("Body");
         String to = httpServletRequest.getParameter("To");

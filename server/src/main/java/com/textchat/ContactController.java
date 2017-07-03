@@ -1,12 +1,9 @@
 package com.textchat;
 
-import com.textchat.model.security.CerberusUser;
 import com.textchat.persistence.contacts.Contact;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.textmessages.ContactResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,7 +20,6 @@ public class ContactController {
     }
 
     @PostMapping("/contacts")
-    @PreAuthorize("hasAuthority('USER')")
     public ContactResponse create(@RequestBody CreateContactRequest createContactRequest) {
         Contact contact = new Contact(createContactRequest.getPhoneNumber(), createContactRequest.getLabel());
         Contact savedContact = contactRepository.save(contact);
@@ -32,7 +28,6 @@ public class ContactController {
     }
 
     @PutMapping("/contacts")
-    @PreAuthorize("hasAuthority('USER')")
     public ContactResponse update(@RequestBody UpdateContactRequest updateContactRequest) {
         Contact contact = contactRepository.findOne(updateContactRequest.getId());
 
@@ -45,7 +40,6 @@ public class ContactController {
     }
 
     @GetMapping("/contacts")
-    @PreAuthorize("hasAuthority('USER')")
     public List<ContactResponse> search(@RequestParam String q, Principal principal) {
         return contactRepository
                 .search(q)
