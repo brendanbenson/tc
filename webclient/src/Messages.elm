@@ -26,6 +26,7 @@ type
     | InputThreadMessage ThreadState String
     | SendMessage ThreadState
     | SentMessage ThreadState (Result Http.Error TextMessage)
+    | InputThreadSearch String
       --
       -- Thread summaries
     | FetchedLatestThreads (Result Http.Error (List TextMessage))

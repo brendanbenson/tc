@@ -7,6 +7,7 @@ import com.textchat.persistence.textmessages.TextMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 
 @Service
@@ -26,22 +27,14 @@ public class TextMessageService {
         this.contactRepository = contactRepository;
     }
 
-    // TODO: create a send method that takes a contact id instead of a phone number
+    @Transactional
+    public TextMessage send(Contact toContact, String body) {
+        assert toContact != null;
+        assert body != null;
 
-    public TextMessage send(String toPhoneNumber, String body) {
         String fromPhoneNumber = "+12486004432";
 
         Contact fromContact = contactRepository.findByPhoneNumber(fromPhoneNumber);
-
-        if (fromContact == null) {
-            fromContact = contactRepository.save(new Contact(fromPhoneNumber, ""));
-        }
-
-        Contact toContact = contactRepository.findByPhoneNumber(toPhoneNumber);
-
-        if (toContact == null) {
-            toContact = contactRepository.save(new Contact(toPhoneNumber, ""));
-        }
 
         TextMessage textMessage = new TextMessage(
                 body,
@@ -56,9 +49,7 @@ public class TextMessageService {
 
         savedTextMessage.setDeliveredAt(new Date());
 
-        TextMessage deliveredTextMessage = textMessageRepository.save(savedTextMessage);
-
-        return deliveredTextMessage;
+        return textMessageRepository.save(savedTextMessage);
     }
 
     public TextMessage recordReceipt(String fromPhoneNumber, String toPhoneNumber, String body) {

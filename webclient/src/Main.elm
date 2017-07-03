@@ -28,6 +28,7 @@ initialModel : Route -> Model
 initialModel route =
     { contactSearch = ""
     , messages = []
+    , threadSearch = ""
     , loadingContactMessages = False
     , contactSuggestions = []
     , loadingContactSuggestions = False

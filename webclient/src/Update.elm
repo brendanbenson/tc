@@ -195,6 +195,9 @@ update msg model =
             from { model | workflow = Thread { threadState | sendingMessage = False } }
                 |> addHttpError e
 
+        InputThreadSearch q ->
+            { model | threadSearch = q } ! []
+
         OnLocationChange location ->
             case parseLocation location of
                 DashboardRoute ->
@@ -241,6 +244,7 @@ openThread contactId ( model, cmd ) =
         | workflow = Thread (newThreadState contactId)
         , editingContact = False
         , loadingContactMessages = True
+        , threadSearch = ""
     }
         ! [ cmd, fetchListForContact contactId ]
         |> focus "message-input"

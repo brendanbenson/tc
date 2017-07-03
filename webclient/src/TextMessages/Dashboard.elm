@@ -10,7 +10,7 @@ import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
 import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(NewContact, Thread))
 import TextMessages.Helpers exposing (latestThreads, messagesForContactId)
-import TextMessages.Models exposing (TextMessage, threadContactId)
+import TextMessages.Models exposing (TextMessage, bodyMatchesString, threadContactId)
 
 
 view : Model -> Html Msg
@@ -213,11 +213,7 @@ threadView model threadState =
             , div [ class "thread-content" ]
                 [ div [ class "thread-messages-pane" ]
                     [ div [ class "thread-body", id "thread-body" ]
-                        [ div [ class "thread-messages" ]
-                            [ loadingMessages model
-                            , div [] (List.map messageView (messagesForContactId contact.id model.messages))
-                            , messageLoadingView threadState
-                            ]
+                        [ threadMessages model threadState contact
                         ]
                     , div [ class "thread-footer" ]
                         [ form [ onSubmit (SendMessage threadState) ]
@@ -238,16 +234,38 @@ threadView model threadState =
                     ]
                 , div [ class "thread-contact-pane" ]
                     [ contactDetails model contact
-                    , h2 [ class "section-break" ] [ text "Options" ]
+                    , h2 [ class "section-break" ]
+                        [ text "Options" ]
+                    , input
+                        [ type_ "text"
+                        , placeholder "Search in thread"
+                        , onInput InputThreadSearch
+                        , value model.threadSearch
+                        , class "thread-search"
+                        ]
+                        []
                     ]
                 ]
             ]
 
 
+threadMessages : Model -> ThreadState -> Contact -> Html Msg
+threadMessages model threadState contact =
+    div [ class "thread-messages" ]
+        [ loadingMessages model
+        , div []
+            (messagesForContactId contact.id model.messages
+                |> List.map messageView
+                << List.filter (bodyMatchesString model.threadSearch)
+            )
+        , messageLoadingView threadState
+        ]
+
+
 loadingMessages : Model -> Html Msg
 loadingMessages model =
     if model.loadingContactMessages == True then
-        div [ class "loading-messages" ]
+        div [ class "info-message" ]
             [ i [ class "fa fa-spin fa-circle-o-notch" ] []
             , text " Loading more..."
             ]

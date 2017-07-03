@@ -20,6 +20,7 @@ type alias Model =
     , createContactPhoneNumber : String
     , creatingFullContact : Bool
     , messages : List TextMessage
+    , threadSearch : String
     , loadingContactMessages : Bool
     , workflow : Workflow
     , route : Route

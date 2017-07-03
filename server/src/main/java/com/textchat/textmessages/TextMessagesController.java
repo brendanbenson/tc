@@ -61,14 +61,13 @@ public class TextMessagesController {
 
     @PostMapping("/contacts/{contactId}/text-messages")
     public TextMessageResponse createForContact(
-            @RequestBody SendContactMessageRequest sendContactMessageRequest,
+            @RequestBody SendMessageRequest sendMessageRequest,
             @PathVariable Long contactId
     ) {
-        Contact contact = contactRepository.findOne(contactId);
 
         TextMessage textMessage = textMessageService.send(
-                contact.getPhoneNumber(),
-                sendContactMessageRequest.getBody()
+                contactRepository.findOne(contactId),
+                sendMessageRequest.getBody()
         );
 
         simpMessagingTemplate.convertAndSend("/text-messages", textMessage);

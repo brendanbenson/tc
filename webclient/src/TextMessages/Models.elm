@@ -1,6 +1,7 @@
 module TextMessages.Models exposing (..)
 
 import Contacts.Models exposing (Contact, ContactId)
+import String exposing (contains, toLower)
 
 
 type alias TextMessage =
@@ -18,3 +19,8 @@ threadContactId textMessage =
         textMessage.fromContact.id
     else
         textMessage.toContact.id
+
+
+bodyMatchesString : String -> TextMessage -> Bool
+bodyMatchesString q textMessage =
+    contains (toLower q) (toLower textMessage.body)
