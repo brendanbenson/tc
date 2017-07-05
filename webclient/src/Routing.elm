@@ -7,7 +7,7 @@ import UrlParser exposing (..)
 
 type Route
     = LoginRoute
-    | DashboardRoute
+    | ComposeRoute
     | ContactThreadRoute ContactId
     | NotFoundRoute
 
@@ -17,7 +17,7 @@ matchers =
     oneOf
         [ map LoginRoute (s "login")
         , map ContactThreadRoute (s "contacts" </> int)
-        , map DashboardRoute top
+        , map ComposeRoute top
         ]
 
 
@@ -39,7 +39,7 @@ toUrl route =
                 LoginRoute ->
                     "/login"
 
-                DashboardRoute ->
+                ComposeRoute ->
                     "/"
 
                 ContactThreadRoute contactId ->

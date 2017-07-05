@@ -9,9 +9,9 @@ import Groups.Api exposing (addToGroup)
 import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout))
 import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
-import Models exposing (Model, UserMessage(ErrorMessage), Workflow(NewContact, Thread), newThreadState)
+import Models exposing (Model, UserMessage(ErrorMessage), newThreadState)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(ContactThreadRoute, DashboardRoute, LoginRoute), newUrl, parseLocation, toUrl)
+import Routing exposing (Route(ContactThreadRoute, ComposeRoute, LoginRoute), newUrl, parseLocation, toUrl)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, sendContactMessage)
@@ -24,25 +24,25 @@ import Time exposing (millisecond)
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        InputContactSearch q ->
+        InputOmniSearch q ->
             if isEmpty q then
-                { model | contactSearch = q, contactSuggestions = [], loadingContactSuggestions = False } ! []
+                { model | omniSearch = q, contactSuggestions = [], loadingContactSuggestions = False } ! []
             else
-                { model | contactSearch = q, loadingContactSuggestions = True }
+                { model | omniSearch = q, loadingContactSuggestions = True }
                     ! [ delay (Time.millisecond * 200) <| SearchContacts q ]
 
         SearchContacts q ->
             let
                 cmd =
-                    if model.contactSearch == q && (q |> not << isEmpty) then
-                        Contacts.Api.search model.contactSearch
+                    if model.omniSearch == q && (q |> not << isEmpty) then
+                        Contacts.Api.search model.omniSearch
                     else
                         Cmd.none
             in
                 model ! [ cmd ]
 
         SearchedContacts q (Ok contacts) ->
-            if model.contactSearch == q then
+            if model.omniSearch == q then
                 from
                     { model
                         | contactSuggestions = List.map .id contacts
@@ -53,7 +53,7 @@ update msg model =
                 from model
 
         SearchedContacts q (Err e) ->
-            if model.contactSearch == q then
+            if model.omniSearch == q then
                 { model | loadingContactSuggestions = False } ! [] |> addHttpError e
             else
                 from model
@@ -83,7 +83,7 @@ update msg model =
             model ! [ newUrl <| ContactThreadRoute contactId ]
 
         StartComposing ->
-            model ! [ newUrl <| DashboardRoute ]
+            model ! [ newUrl <| ComposeRoute ]
 
         CreateContact phoneNumber ->
             from model |> createContact ContactCreated "" phoneNumber
@@ -161,11 +161,11 @@ update msg model =
             { model | loadingContactMessages = False } ! [] |> addHttpError e
 
         InputThreadMessage threadState messageBody ->
-            { model | workflow = Thread { threadState | draftMessage = messageBody } }
+            { model | threadState = { threadState | draftMessage = messageBody } }
                 ! []
 
         SendMessage threadState ->
-            { model | workflow = Thread { threadState | sendingMessage = True } }
+            { model | threadState = { threadState | sendingMessage = True } }
                 ! [ sendContactMessage
                         threadState.to
                         threadState.draftMessage
@@ -176,18 +176,17 @@ update msg model =
         SentMessage threadState (Ok textMessage) ->
             from
                 { model
-                    | workflow =
-                        Thread
-                            { threadState
-                                | draftMessage = ""
-                                , sendingMessage = False
-                            }
+                    | threadState =
+                        { threadState
+                            | draftMessage = ""
+                            , sendingMessage = False
+                        }
                 }
                 |> scrollToBottom "thread-body"
                 |> addMessage textMessage
 
         SentMessage threadState (Err e) ->
-            from { model | workflow = Thread { threadState | sendingMessage = False } }
+            from { model | threadState = { threadState | sendingMessage = False } }
                 |> addHttpError e
 
         InputThreadSearch q ->
@@ -272,7 +271,7 @@ update msg model =
                     parseLocation location
             in
                 case route of
-                    DashboardRoute ->
+                    ComposeRoute ->
                         from model |> updateRoute route |> openDashboard
 
                     ContactThreadRoute contactId ->
@@ -289,7 +288,7 @@ from model =
 
 openDashboard : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 openDashboard ( model, cmd ) =
-    { model | workflow = NewContact }
+    model
         ! [ cmd
           , subscribeToTextMessages ()
           , fetchLatestThreads
@@ -300,7 +299,7 @@ openDashboard ( model, cmd ) =
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 openThread contactId ( model, cmd ) =
     { model
-        | workflow = Thread (newThreadState contactId)
+        | threadState = newThreadState contactId
         , editingContact = False
         , loadingContactMessages = True
         , threadSearch = ""

@@ -16,29 +16,28 @@ var client = Stomp.over(ws);
 var socketConnected = false;
 
 app.ports.subscribeToTextMessages.subscribe(function () {
-    connectAndReconnect(onConnect);
+    if (!socketConnected) {
+        connectAndReconnect(onConnect);
+    }
 });
 
 var onConnect = function () {
-    socketConnected = true;
     client.subscribe('/text-messages', function (textMessageResponse) {
         app.ports.receiveTextMessages.send(textMessageResponse.body);
     });
 };
 
 function connectAndReconnect(successCallback) {
-    if (!socketConnected) {
-        ws = new SockJS(socketUrl);
-        client = Stomp.over(ws);
-        client.connect({}, function (frame) {
-            successCallback();
-        }, function () {
-            socketConnected = false;
-            setTimeout(function () {
-                connectAndReconnect(successCallback);
-            }, 10000);
-        });
-    }
+    socketConnected = true;
+    ws = new SockJS(socketUrl);
+    client = Stomp.over(ws);
+    client.connect({}, function (frame) {
+        successCallback();
+    }, function () {
+        setTimeout(function () {
+            connectAndReconnect(successCallback);
+        }, 10000);
+    });
 }
 
 require('./style/base.scss');

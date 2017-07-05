@@ -2,9 +2,8 @@ module Main exposing (..)
 
 import Contacts.Models exposing (emptyContact)
 import Dict
-import DomUtils exposing (focus)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(NewContact), newThreadState)
+import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), newThreadState)
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(..), newUrl)
@@ -26,7 +25,7 @@ main =
 
 initialModel : Route -> Model
 initialModel route =
-    { contactSearch = ""
+    { omniSearch = ""
     , messages = []
     , threadSearch = ""
     , addToGroupSearch = ""
@@ -35,7 +34,7 @@ initialModel route =
     , loadingContactMessages = False
     , contactSuggestions = []
     , loadingContactSuggestions = False
-    , workflow = NewContact
+    , threadState = newThreadState 0
     , contacts = Dict.empty
     , editingContact = False
     , contactEdits = emptyContact
@@ -63,7 +62,7 @@ init location =
             initialModel currentRoute
     in
         case currentRoute of
-            DashboardRoute ->
+            ComposeRoute ->
                 from model |> openDashboard
 
             ContactThreadRoute contactId ->

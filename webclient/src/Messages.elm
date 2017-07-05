@@ -12,8 +12,8 @@ import TextMessages.Models exposing (TextMessage)
 type
     Msg
     --
-    -- Contact auto-complete
-    = InputContactSearch String
+    -- Compose auto-complete
+    = InputOmniSearch String
     | SearchContacts String
     | SearchedContacts String (Result Http.Error (List Contact))
       --

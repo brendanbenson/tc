@@ -11,7 +11,7 @@ type alias Model =
     { contacts : Dict ContactId Contact
     , contactSuggestions : List ContactId
     , loadingContactSuggestions : Bool
-    , contactSearch : String
+    , omniSearch : String
     , editingContact : Bool
     , contactEdits : Contact
     , savingContactEdits : Bool
@@ -19,13 +19,13 @@ type alias Model =
     , createContactName : String
     , createContactPhoneNumber : String
     , creatingFullContact : Bool
+    , threadState : ThreadState
     , messages : List TextMessage
     , threadSearch : String
     , addToGroupSearch : String
     , loadingGroupSuggestions : Bool
     , groupAddSuggestions : List Group
     , loadingContactMessages : Bool
-    , workflow : Workflow
     , route : Route
     , username : String
     , password : String
@@ -37,12 +37,6 @@ type alias Model =
 
 type UserMessage
     = ErrorMessage String
-
-
-type Workflow
-    = Thread ThreadState
-      --TODO rename this
-    | NewContact
 
 
 type alias ThreadState =
