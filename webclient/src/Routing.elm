@@ -1,5 +1,6 @@
 module Routing exposing (..)
 
+import Contacts.Models exposing (ContactId)
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
@@ -7,14 +8,16 @@ import UrlParser exposing (..)
 type Route
     = LoginRoute
     | DashboardRoute
+    | ContactThreadRoute ContactId
     | NotFoundRoute
 
 
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map LoginRoute top
-        , map DashboardRoute (s "dashboard")
+        [ map LoginRoute (s "login")
+        , map ContactThreadRoute (s "contacts" </> int)
+        , map DashboardRoute top
         ]
 
 
@@ -38,6 +41,9 @@ toUrl route =
 
                 DashboardRoute ->
                     "/"
+
+                ContactThreadRoute contactId ->
+                    "/contacts/" ++ (toString contactId)
 
                 NotFoundRoute ->
                     "/not-found"

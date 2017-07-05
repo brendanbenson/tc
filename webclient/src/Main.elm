@@ -8,7 +8,7 @@ import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), Workflow(
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(..), newUrl)
-import Update exposing (update)
+import Update exposing (from, openDashboard, openThread, update)
 import View exposing (view)
 import Platform.Cmd exposing (Cmd)
 import TextMessages.Api exposing (fetchLatestThreads, fetchLatestThreads, fetchListForContact)
@@ -64,20 +64,15 @@ init location =
     in
         case currentRoute of
             DashboardRoute ->
-                model
-                    ! [ subscribeToTextMessages ()
-                      , fetchLatestThreads
-                      , focus "contact-search"
-                      ]
+                from model |> openDashboard
+
+            ContactThreadRoute contactId ->
+                model ! [ fetchLatestThreads ] |> openThread contactId
 
             LoginRoute ->
-                { model | route = DashboardRoute }
-                    ! [ subscribeToTextMessages ()
-                      , fetchLatestThreads
-                      , focus "contact-search"
-                      ]
+                model ! []
 
-            _ ->
+            NotFoundRoute ->
                 model ! []
 
 

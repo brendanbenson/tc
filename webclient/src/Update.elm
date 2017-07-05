@@ -11,7 +11,7 @@ import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
 import Models exposing (Model, UserMessage(ErrorMessage), Workflow(NewContact, Thread), newThreadState)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(DashboardRoute, LoginRoute), newUrl, parseLocation)
+import Routing exposing (Route(ContactThreadRoute, DashboardRoute, LoginRoute), newUrl, parseLocation, toUrl)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, sendContactMessage)
@@ -80,12 +80,10 @@ update msg model =
                     Debug.log e <| (from model |> addStringError "An error occurred while receiving text messages.")
 
         OpenThread contactId ->
-            from { model | contactSearch = "", contactSuggestions = [] }
-                |> scrollToBottom "thread-body"
-                |> openThread contactId
+            model ! [ newUrl <| ContactThreadRoute contactId ]
 
         StartComposing ->
-            from { model | workflow = NewContact } |> focus "contact-search"
+            model ! [ newUrl <| DashboardRoute ]
 
         CreateContact phoneNumber ->
             from model |> createContact ContactCreated "" phoneNumber
@@ -242,14 +240,6 @@ update msg model =
         AddedToGroup contactId (Err e) ->
             from model |> addHttpError e
 
-        OnLocationChange location ->
-            case parseLocation location of
-                DashboardRoute ->
-                    { model | route = DashboardRoute } ! [ subscribeToTextMessages () ]
-
-                r ->
-                    { model | route = r } ! []
-
         InputUsername newUsername ->
             { model | username = newUsername } ! []
 
@@ -276,10 +266,35 @@ update msg model =
         NoOp ->
             from model
 
+        OnLocationChange location ->
+            let
+                route =
+                    parseLocation location
+            in
+                case route of
+                    DashboardRoute ->
+                        from model |> updateRoute route |> openDashboard
+
+                    ContactThreadRoute contactId ->
+                        from model |> updateRoute route |> openThread contactId
+
+                    r ->
+                        from model |> updateRoute route
+
 
 from : Model -> ( Model, Cmd Msg )
 from model =
     model ! []
+
+
+openDashboard : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+openDashboard ( model, cmd ) =
+    { model | workflow = NewContact }
+        ! [ cmd
+          , subscribeToTextMessages ()
+          , fetchLatestThreads
+          ]
+        |> focus "contact-search"
 
 
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -290,8 +305,12 @@ openThread contactId ( model, cmd ) =
         , loadingContactMessages = True
         , threadSearch = ""
     }
-        ! [ cmd, fetchListForContact contactId ]
+        ! [ cmd
+          , subscribeToTextMessages ()
+          , fetchListForContact contactId
+          ]
         |> focus "message-input"
+        |> scrollToBottom "thread-body"
 
 
 closeCreateContactModal : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -387,3 +406,8 @@ scrollToBottom id ( model, cmd ) =
 focus : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 focus id ( model, cmd ) =
     model ! [ cmd, DomUtils.focus id ]
+
+
+updateRoute : Route -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+updateRoute route ( model, cmd ) =
+    { model | route = route } ! [ cmd ]

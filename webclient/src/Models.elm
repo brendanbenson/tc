@@ -41,6 +41,7 @@ type UserMessage
 
 type Workflow
     = Thread ThreadState
+      --TODO rename this
     | NewContact
 
 

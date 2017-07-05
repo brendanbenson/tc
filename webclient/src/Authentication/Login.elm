@@ -10,8 +10,8 @@ import Models exposing (Model)
 
 view : Model -> Html Msg
 view model =
-    div [ class "login-page" ]
-        [ div [ class "login-container" ]
+    div [ class "fill-page" ]
+        [ div [ class "fill-panel" ]
             [ form [ class "login-form", onSubmit SubmitLogin ]
                 [ h2 [] [ text "Please Log In" ]
                 , fieldset []

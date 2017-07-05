@@ -18,5 +18,8 @@ view model =
         DashboardRoute ->
             TextMessages.Dashboard.view model
 
+        ContactThreadRoute contactId ->
+            TextMessages.Dashboard.view model
+
         NotFoundRoute ->
             NotFound.view
