@@ -166,8 +166,6 @@ a:hover {
       min-width: 18em;
 
       .contact-details {
-        padding: 1em;
-
         .add-name {
           cursor: pointer;
           color: $simple-content;
@@ -176,6 +174,10 @@ a:hover {
             color: $flair;
           }
         }
+      }
+
+      .content-block {
+        padding: 1em;
       }
     }
   }
@@ -225,7 +227,7 @@ a:hover {
   }
 }
 
-.contact-suggestion {
+.suggestion {
   padding: .5em 1em;
   background-color: $simple;
   border-bottom: 1px solid white;

@@ -1,8 +1,8 @@
 module Models exposing (..)
 
-import Authentication.AuthToken exposing (AuthToken)
-import Contacts.Models exposing (Contact)
+import Contacts.Models exposing (Contact, ContactId)
 import Dict exposing (Dict)
+import Groups.Models exposing (Group)
 import Routing exposing (Route)
 import TextMessages.Models exposing (TextMessage)
 
@@ -21,6 +21,9 @@ type alias Model =
     , creatingFullContact : Bool
     , messages : List TextMessage
     , threadSearch : String
+    , addToGroupSearch : String
+    , loadingGroupSuggestions : Bool
+    , groupAddSuggestions : List Group
     , loadingContactMessages : Bool
     , workflow : Workflow
     , route : Route
@@ -54,7 +57,3 @@ newThreadState contactId =
     , draftMessage = ""
     , sendingMessage = False
     }
-
-
-type alias ContactId =
-    Int

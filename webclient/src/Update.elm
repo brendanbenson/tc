@@ -5,6 +5,7 @@ import Contacts.Api exposing (editContact)
 import Contacts.Helpers exposing (getContact)
 import Contacts.Models exposing (Contact, ContactId)
 import DomUtils exposing (focus)
+import Groups.Api exposing (addToGroup)
 import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout))
 import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
@@ -23,26 +24,22 @@ import Time exposing (millisecond)
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        InputContactSearch newPhoneNumber ->
-            if isEmpty newPhoneNumber then
-                { model | contactSearch = newPhoneNumber, contactSuggestions = [] } ! []
+        InputContactSearch q ->
+            if isEmpty q then
+                { model | contactSearch = q, contactSuggestions = [], loadingContactSuggestions = False } ! []
             else
-                { model | contactSearch = newPhoneNumber }
-                    ! [ delay (Time.millisecond * 200) <| SearchContacts newPhoneNumber ]
+                { model | contactSearch = q, loadingContactSuggestions = True }
+                    ! [ delay (Time.millisecond * 200) <| SearchContacts q ]
 
-        SearchContacts contactSearch ->
+        SearchContacts q ->
             let
                 cmd =
-                    if
-                        model.contactSearch
-                            == contactSearch
-                            && (contactSearch |> not << isEmpty)
-                    then
+                    if model.contactSearch == q && (q |> not << isEmpty) then
                         Contacts.Api.search model.contactSearch
                     else
                         Cmd.none
             in
-                { model | loadingContactSuggestions = True } ! [ cmd ]
+                model ! [ cmd ]
 
         SearchedContacts q (Ok contacts) ->
             if model.contactSearch == q then
@@ -197,6 +194,53 @@ update msg model =
 
         InputThreadSearch q ->
             { model | threadSearch = q } ! []
+
+        InputAddToGroupSearch contact q ->
+            if isEmpty q then
+                { model
+                    | addToGroupSearch = q
+                    , groupAddSuggestions = []
+                    , loadingGroupSuggestions = False
+                }
+                    ! []
+            else
+                { model
+                    | addToGroupSearch = q
+                    , loadingGroupSuggestions = True
+                }
+                    ! [ delay (Time.millisecond * 200) <| SearchGroups contact q ]
+
+        SearchGroups contact q ->
+            let
+                cmd =
+                    if model.addToGroupSearch == q && (q |> not << isEmpty) then
+                        Groups.Api.search contact.id q
+                    else
+                        Cmd.none
+            in
+                model ! [ cmd ]
+
+        SearchedGroups q (Ok groups) ->
+            if model.addToGroupSearch == q then
+                { model | groupAddSuggestions = groups, loadingGroupSuggestions = False } ! []
+            else
+                model ! []
+
+        SearchedGroups q (Err e) ->
+            from { model | loadingGroupSuggestions = False } |> addHttpError e
+
+        AddToGroup contact group ->
+            model ! [ addToGroup (AddedToGroup contact.id) contact.id group.id ]
+
+        AddedToGroup contactId (Ok group) ->
+            let
+                contact =
+                    getContact model.contacts contactId
+            in
+                from model |> updateContact { contact | groups = group :: contact.groups }
+
+        AddedToGroup contactId (Err e) ->
+            from model |> addHttpError e
 
         OnLocationChange location ->
             case parseLocation location of

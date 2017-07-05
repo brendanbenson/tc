@@ -1,5 +1,6 @@
 module Contacts.Models exposing (..)
 
+import Groups.Models exposing (Group)
 import String exposing (slice)
 
 
@@ -11,6 +12,7 @@ type alias Contact =
     { id : ContactId
     , phoneNumber : String
     , label : String
+    , groups : List Group
     }
 
 
@@ -19,4 +21,5 @@ emptyContact =
     { id = 0
     , phoneNumber = ""
     , label = ""
+    , groups = []
     }

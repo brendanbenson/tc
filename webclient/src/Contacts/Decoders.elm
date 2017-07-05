@@ -1,6 +1,7 @@
 module Contacts.Decoders exposing (..)
 
 import Contacts.Models exposing (Contact)
+import Groups.Decoders exposing (decodeGroup)
 import Json.Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (decode, required)
 
@@ -16,3 +17,4 @@ decodeContact =
         |> required "id" int
         |> required "phoneNumber" string
         |> required "label" string
+        |> required "groups" (list decodeGroup)

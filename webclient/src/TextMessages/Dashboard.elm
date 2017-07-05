@@ -3,6 +3,7 @@ module TextMessages.Dashboard exposing (view)
 import Char exposing (isDigit)
 import Contacts.Helpers exposing (getContact)
 import Contacts.Models exposing (Contact, ContactId)
+import Groups.Models exposing (Group)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -101,7 +102,7 @@ recipientSuggestions model =
 loadingSuggestions : Model -> Html Msg
 loadingSuggestions model =
     if model.loadingContactSuggestions == True then
-        div [ class "contact-suggestion" ]
+        div [ class "suggestion" ]
             [ span [ class "loading" ]
                 [ i [ class "fa fa-spin fa-circle-o-notch" ] []
                 , text " Loading suggestions..."
@@ -117,7 +118,7 @@ contactSuggestion model contactId =
         contact =
             getContact model.contacts contactId
     in
-        div [ class "contact-suggestion", onClick (OpenThread contactId) ]
+        div [ class "suggestion", onClick (OpenThread contactId) ]
             [ span [ class "label" ] [ text "To: " ]
             , span [ class "body" ] [ text <| contactName contact ]
             ]
@@ -131,12 +132,12 @@ rawPhoneNumberSuggestion model =
 
         _ ->
             if String.any isDigit model.contactSearch == True then
-                div [ class "contact-suggestion", onClick (CreateContact model.contactSearch) ]
+                div [ class "suggestion", onClick (CreateContact model.contactSearch) ]
                     [ span [ class "label" ] [ text "New message to: " ]
                     , span [ class "body" ] [ text <| String.filter isDigit model.contactSearch ]
                     ]
             else
-                div [ class "contact-suggestion", onClick (OpenCreateContactModal model.contactSearch) ]
+                div [ class "suggestion", onClick (OpenCreateContactModal model.contactSearch) ]
                     [ span [ class "label" ] [ text "Create new contact: " ]
                     , span [ class "body" ] [ text model.contactSearch ]
                     ]
@@ -236,17 +237,72 @@ threadView model threadState =
                     [ contactDetails model contact
                     , h2 [ class "section-break" ]
                         [ text "Options" ]
-                    , input
-                        [ type_ "text"
-                        , placeholder "Search in thread"
-                        , onInput InputThreadSearch
-                        , value model.threadSearch
-                        , class "thread-search"
+                    , div [ class "content-block" ]
+                        [ input
+                            [ type_ "text"
+                            , placeholder "Search in thread"
+                            , onInput InputThreadSearch
+                            , value model.threadSearch
+                            , class "thread-search"
+                            ]
+                            []
                         ]
-                        []
+                    , h2 [ class "section-break" ] [ text "Groups" ]
+                    , div [ class "content-block" ]
+                        [ groups contact
+                        , addToGroupSearch contact model
+                        ]
+                    , div [] [ loadingAddToGroupSuggestions model, addToGroupSuggestions contact model.groupAddSuggestions ]
                     ]
                 ]
             ]
+
+
+loadingAddToGroupSuggestions : Model -> Html Msg
+loadingAddToGroupSuggestions model =
+    if model.loadingGroupSuggestions == True then
+        div [ class "suggestion" ]
+            [ span [ class "loading" ]
+                [ i [ class "fa fa-spin fa-circle-o-notch" ] []
+                , text " Loading suggestions..."
+                ]
+            ]
+    else
+        span [] []
+
+
+groups : Contact -> Html Msg
+groups contact =
+    div [] (List.map group contact.groups)
+
+
+group : Group -> Html Msg
+group group_ =
+    div [ class "group" ] [ a [] [ text group_.label ] ]
+
+
+addToGroupSearch : Contact -> Model -> Html Msg
+addToGroupSearch contact model =
+    input
+        [ type_ "text"
+        , placeholder "Add to group"
+        , value model.addToGroupSearch
+        , onInput (InputAddToGroupSearch contact)
+        ]
+        []
+
+
+addToGroupSuggestions : Contact -> List Group -> Html Msg
+addToGroupSuggestions contact groups =
+    div [] (List.map (addToGroupSuggestion contact) groups)
+
+
+addToGroupSuggestion : Contact -> Group -> Html Msg
+addToGroupSuggestion contact group_ =
+    div [ class "suggestion", onClick (AddToGroup contact group_) ]
+        [ span [ class "label" ] [ text "Add to: " ]
+        , span [ class "body" ] [ text group_.label ]
+        ]
 
 
 threadMessages : Model -> ThreadState -> Contact -> Html Msg
@@ -289,7 +345,7 @@ contactDetails model contact =
     in
         case model.editingContact of
             True ->
-                div [ class "contact-details" ]
+                div [ class "contact-details content-block" ]
                     [ form [ onSubmit <| EditContact model.contactEdits ]
                         [ input
                             [ type_ "text"
@@ -317,7 +373,7 @@ contactDetails model contact =
                     ]
 
             False ->
-                div [ class "contact-details" ]
+                div [ class "contact-details content-block" ]
                     [ contactLabel
                     , h3 [ onClick <| StartEditingContact "edit-contact-phone-number" contact, class "hover-edit" ] [ text contact.phoneNumber ]
                     ]

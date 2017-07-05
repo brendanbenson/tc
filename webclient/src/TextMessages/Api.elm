@@ -1,8 +1,8 @@
 module TextMessages.Api exposing (..)
 
+import Contacts.Models exposing (ContactId)
 import Http exposing (Error, jsonBody)
 import Messages exposing (Msg(FetchedLatestThreads, FetchedTextMessagesForContact))
-import Models exposing (ContactId)
 import TextMessages.Decoders exposing (decodeTextMessage, decodeTextMessageList)
 import TextMessages.Encoders exposing (createTextMessageRequest)
 import TextMessages.Models exposing (TextMessage)

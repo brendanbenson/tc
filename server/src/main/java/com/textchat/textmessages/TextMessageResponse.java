@@ -13,7 +13,14 @@ class TextMessageResponse {
     public TextMessageResponse() {
     }
 
-    public TextMessageResponse(Long id, String body, Boolean incoming, ContactResponse toContact, ContactResponse fromContact, Boolean read) {
+    public TextMessageResponse(
+            Long id,
+            String body,
+            Boolean incoming,
+            ContactResponse toContact,
+            ContactResponse fromContact,
+            Boolean read
+    ) {
         this.id = id;
         this.body = body;
         this.incoming = incoming;

@@ -15,7 +15,6 @@ public interface TextMessageRepository extends PagingAndSortingRepository<TextMe
                     "ON (m1.to_contact_id = m2.to_contact_id " +
                     "AND m1.created_at < m2.created_at) " +
                     "WHERE m2.id IS NULL " +
-                    "ORDER BY m1.created_at DESC " +
-                    "LIMIT 100")
+                    "ORDER BY m1.created_at DESC")
     List<TextMessage> findLatestThreads();
 }

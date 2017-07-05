@@ -2,22 +2,33 @@ package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
 
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 public class ContactResponse {
     private Long id;
     private String phoneNumber;
     private String label;
+    private List<GroupResponse> groups;
 
     public ContactResponse() {
     }
 
-    public ContactResponse(Long id, String phoneNumber, String label) {
+    public ContactResponse(Long id, String phoneNumber, String label, List<GroupResponse> groups) {
         this.id = id;
         this.phoneNumber = phoneNumber;
         this.label = label;
+        this.groups = groups;
     }
 
     public ContactResponse(Contact contact) {
-        this(contact.getId(), contact.getPhoneNumber(), contact.getLabel());
+        this(
+                contact.getId(),
+                contact.getPhoneNumber(),
+                contact.getLabel(),
+                contact.getGroups().stream().map(GroupResponse::new).collect(toList())
+        );
     }
 
     public Long getId() {
@@ -30,6 +41,10 @@ public class ContactResponse {
 
     public String getLabel() {
         return label;
+    }
+
+    public List<GroupResponse> getGroups() {
+        return groups;
     }
 
     @Override
