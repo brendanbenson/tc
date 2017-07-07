@@ -78,6 +78,7 @@ update msg model =
                         |> addMessage textMessage
                         |> updateContacts [ textMessage.toContact, textMessage.fromContact ]
                         |> scrollToBottom "thread-body"
+                        |> dingIf textMessage.incoming
 
                 Err e ->
                     Debug.log e <| (from model |> addStringError "An error occurred while receiving text messages.")
@@ -609,3 +610,11 @@ focus id ( model, cmd ) =
 updateRoute : Route -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 updateRoute route ( model, cmd ) =
     { model | route = route } ! [ cmd ]
+
+
+dingIf : Bool -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+dingIf shouldDing ( model, cmd ) =
+    if shouldDing then
+        model ! [ cmd, Ports.ding () ]
+    else
+        model ! [ cmd ]

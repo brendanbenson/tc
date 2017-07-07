@@ -42,5 +42,12 @@ function connectAndReconnect(successCallback) {
     });
 }
 
+var ding = require('./sounds/ding.mp3');
+
+app.ports.ding.subscribe(function() {
+    var audio = new Audio(ding);
+    audio.play();
+});
+
 require('./style/base.scss');
 require('font-awesome-webpack');
