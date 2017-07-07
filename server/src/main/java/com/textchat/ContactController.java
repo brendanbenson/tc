@@ -6,10 +6,11 @@ import com.textchat.persistence.groups.Group;
 import com.textchat.persistence.groups.GroupRepository;
 import com.textchat.textmessages.ContactResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.security.Principal;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,15 +21,26 @@ import static java.util.Comparator.nullsLast;
 public class ContactController {
     private ContactRepository contactRepository;
     private GroupRepository groupRepository;
+    private CreateContactRequestValidator createContactRequestValidator;
 
     @Autowired
-    public ContactController(ContactRepository contactRepository, GroupRepository groupRepository) {
+    public ContactController(
+            ContactRepository contactRepository,
+            GroupRepository groupRepository,
+            CreateContactRequestValidator createContactRequestValidator
+    ) {
         this.contactRepository = contactRepository;
         this.groupRepository = groupRepository;
+        this.createContactRequestValidator = createContactRequestValidator;
+    }
+
+    @InitBinder
+    public void setupBinder(WebDataBinder binder) {
+        binder.addValidators(createContactRequestValidator);
     }
 
     @PostMapping("/contacts")
-    public ContactResponse create(@RequestBody CreateContactRequest createContactRequest) {
+    public ContactResponse create(@Valid @RequestBody CreateContactRequest createContactRequest) {
         Contact contact = new Contact(createContactRequest.getPhoneNumber(), createContactRequest.getLabel());
         Contact savedContact = contactRepository.save(contact);
 
@@ -87,16 +99,4 @@ public class ContactController {
         }
     }
 
-    private static class CreateContactRequest {
-        private String label;
-        private String phoneNumber;
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
 }

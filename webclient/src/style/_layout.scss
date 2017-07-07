@@ -277,12 +277,18 @@ a:hover {
   background-color: rgba(0,0,0,.60);
 
   .modal {
+    min-width: 20em;
     max-width: 40em;
+
+    padding: 2em;
     background-color: white;
-    margin: 1em auto;
-    padding: 1em;
     border-radius: .5em;
     box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
+
+    margin: auto;
+    position: relative;
+    top: 40%;
+    transform: translateY(-60%);
 
     .modal-close {
       float: right;
@@ -307,6 +313,12 @@ a:hover {
 
   &.error {
     border-left: .5em solid $flair;
+
+    .label {
+      color: $flair;
+      font-weight: 400;
+      display: inline-block;
+    }
   }
 
   &.success {

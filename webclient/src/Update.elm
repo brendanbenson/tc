@@ -22,6 +22,8 @@ import TextMessages.Decoders exposing (decodeTextMessage)
 import TextMessages.Helpers
 import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 import Time exposing (millisecond)
+import Validation.Decoders
+import Validation.Helpers
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -526,44 +528,24 @@ addHttpError : Http.Error -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 addHttpError e ( model, cmd ) =
     case e of
         BadUrl errorMessage ->
-            Debug.log errorMessage
-                ({ model
-                    | userMessages =
-                        (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
-                 }
-                    ! [ cmd, removeUserMessageCmd ]
-                )
+            Debug.log errorMessage (( model, cmd ) |> addStringError "An error occurred. Please try again.")
 
         Timeout ->
-            { model
-                | userMessages =
-                    (ErrorMessage "An network timeout occurred. Please try again.") :: model.userMessages
-            }
-                ! [ cmd, removeUserMessageCmd ]
+            ( model, cmd ) |> addStringError "An network timeout occurred. Please try again."
 
         NetworkError ->
-            { model
-                | userMessages =
-                    (ErrorMessage "An network error occurred. Please check your connection and try again.")
-                        :: model.userMessages
-            }
-                ! [ cmd, removeUserMessageCmd ]
+            ( model, cmd ) |> addStringError "An network error occurred. Please check your connection and try again."
 
         BadStatus response ->
-            { model
-                | userMessages =
-                    (ErrorMessage "The action failed. Please try again.") :: model.userMessages
-            }
-                ! [ cmd, removeUserMessageCmd ]
+            case decodeString Validation.Decoders.decodeValidationErrors response.body of
+                Ok validationErrors ->
+                    List.foldr addStringError ( model, cmd ) (Validation.Helpers.allErrorDescriptions validationErrors)
+
+                Err e ->
+                    Debug.log "Could not parse errors" (( model, cmd ) |> addStringError "Action failed. Please try again.")
 
         BadPayload errorMessage response ->
-            Debug.log errorMessage
-                ({ model
-                    | userMessages =
-                        (ErrorMessage "An error occurred. Please try again.") :: model.userMessages
-                 }
-                    ! [ cmd, removeUserMessageCmd ]
-                )
+            Debug.log errorMessage (( model, cmd ) |> addStringError "An error occurred. Please try again.")
 
 
 addStringError : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )

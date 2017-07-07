@@ -16,7 +16,7 @@ userMessage : UserMessage -> Html Msg
 userMessage message =
     case message of
         ErrorMessage e ->
-            div [ class "user-message error" ] [ text e ]
+            div [ class "user-message error" ] [ div [ class "label" ] [ text "Error:" ], text <| " " ++ e ]
 
         SuccessMessage m ->
             div [ class "user-message success" ] [ text m ]
