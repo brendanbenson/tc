@@ -2,9 +2,9 @@ module Models exposing (..)
 
 import Contacts.Models exposing (Contact, ContactId)
 import Dict exposing (Dict)
-import Groups.Models exposing (Group)
+import Groups.Models exposing (Group, GroupId)
 import Routing exposing (Route)
-import TextMessages.Models exposing (TextMessage)
+import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 
 
 type alias Model =
@@ -19,36 +19,61 @@ type alias Model =
     , createContactName : String
     , createContactPhoneNumber : String
     , creatingFullContact : Bool
-    , threadState : ThreadState
+    , contactThreadState : ContactThreadState
+    , groupThreadState : GroupThreadState
     , messages : List TextMessage
+    , groupMessages : List GroupTextMessage
     , threadSearch : String
     , addToGroupSearch : String
     , loadingGroupSuggestions : Bool
-    , groupAddSuggestions : List Group
+    , groupAddSuggestions : List GroupId
+    , addToGroupContactSearch : String
+    , groupAddContactSuggestions : List ContactId
+    , loadingGroupContactSuggestions : Bool
+    , groups : Dict GroupId Group
+    , groupContacts : List ContactId
     , loadingContactMessages : Bool
+    , loadingGroupMessages : Bool
     , route : Route
     , username : String
     , password : String
     , authError : Bool
     , sendingAuth : Bool
     , userMessages : List UserMessage
+    , connectedToServer : Bool
     }
 
 
 type UserMessage
     = ErrorMessage String
+    | SuccessMessage String
 
 
-type alias ThreadState =
+type alias ContactThreadState =
     { to : ContactId
     , draftMessage : String
     , sendingMessage : Bool
     }
 
 
-newThreadState : ContactId -> ThreadState
-newThreadState contactId =
+newContactThreadState : ContactId -> ContactThreadState
+newContactThreadState contactId =
     { to = contactId
+    , draftMessage = ""
+    , sendingMessage = False
+    }
+
+
+type alias GroupThreadState =
+    { to : GroupId
+    , draftMessage : String
+    , sendingMessage : Bool
+    }
+
+
+newGroupThreadState : GroupId -> GroupThreadState
+newGroupThreadState groupId =
+    { to = groupId
     , draftMessage = ""
     , sendingMessage = False
     }

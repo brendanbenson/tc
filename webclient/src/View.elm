@@ -2,13 +2,14 @@ module View exposing (..)
 
 import Authentication.Login
 import Compose
-import Html exposing (Html)
+import Html exposing (Html, text)
 import Messages exposing (Msg)
 import Models exposing (Model)
 import NotFound
 import Routing exposing (Route(..))
 import TextMessages.Dashboard
-import Thread
+import ContactThread
+import GroupThread
 
 
 view : Model -> Html Msg
@@ -21,7 +22,10 @@ view model =
             TextMessages.Dashboard.view model (Compose.view model)
 
         ContactThreadRoute contactId ->
-            TextMessages.Dashboard.view model (Thread.view model)
+            TextMessages.Dashboard.view model (ContactThread.view model)
+
+        GroupThreadRoute groupId ->
+            TextMessages.Dashboard.view model (GroupThread.view model)
 
         NotFoundRoute ->
             NotFound.view

@@ -1,6 +1,7 @@
 module Routing exposing (..)
 
 import Contacts.Models exposing (ContactId)
+import Groups.Models exposing (GroupId)
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
@@ -9,6 +10,7 @@ type Route
     = LoginRoute
     | ComposeRoute
     | ContactThreadRoute ContactId
+    | GroupThreadRoute GroupId
     | NotFoundRoute
 
 
@@ -17,6 +19,7 @@ matchers =
     oneOf
         [ map LoginRoute (s "login")
         , map ContactThreadRoute (s "contacts" </> int)
+        , map GroupThreadRoute (s "groups" </> int)
         , map ComposeRoute top
         ]
 
@@ -44,6 +47,9 @@ toUrl route =
 
                 ContactThreadRoute contactId ->
                     "/contacts/" ++ (toString contactId)
+
+                GroupThreadRoute contactId ->
+                    "/groups/" ++ (toString contactId)
 
                 NotFoundRoute ->
                     "/not-found"

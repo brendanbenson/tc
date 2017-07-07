@@ -70,7 +70,7 @@ public class TextMessagesController {
                 sendMessageRequest.getBody()
         );
 
-        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
+        simpMessagingTemplate.convertAndSend("/text-messages", new TextMessageResponse(textMessage, false));
 
         return new TextMessageResponse(textMessage, false); // TODO
     }
@@ -84,6 +84,6 @@ public class TextMessagesController {
 
         TextMessage textMessage = textMessageService.recordReceipt(from, to, body);
 
-        simpMessagingTemplate.convertAndSend("/text-messages", textMessage);
+        simpMessagingTemplate.convertAndSend("/text-messages", new TextMessageResponse(textMessage, false));
     }
 }

@@ -2,6 +2,7 @@ package com.textchat;
 
 import com.textchat.textmessages.NullTextMessageGateway;
 import com.textchat.textmessages.TextMessageGateway;
+import com.textchat.twilio.TwilioTextMessageGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

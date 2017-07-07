@@ -2,13 +2,19 @@ module TextMessages.Helpers exposing (..)
 
 import Contacts.Models exposing (ContactId)
 import Dict exposing (Dict)
+import Groups.Models exposing (GroupId)
 import List exposing (append, concat, filter, foldr, reverse, sortBy)
 import List.Extra exposing (uniqueBy)
-import TextMessages.Models exposing (TextMessage, threadContactId)
+import TextMessages.Models exposing (GroupTextMessage, TextMessage, threadContactId)
 
 
 addMessage : TextMessage -> List TextMessage -> List TextMessage
 addMessage newMessage existingMessages =
+    newMessage :: existingMessages |> uniqueBy .id
+
+
+addGroupMessage : GroupTextMessage -> List GroupTextMessage -> List GroupTextMessage
+addGroupMessage newMessage existingMessages =
     newMessage :: existingMessages |> uniqueBy .id
 
 
@@ -17,9 +23,19 @@ addMessages existingMessages newMessages =
     foldr addMessage existingMessages newMessages
 
 
+addGroupMessages : List GroupTextMessage -> List GroupTextMessage -> List GroupTextMessage
+addGroupMessages existingMessages newMessages =
+    foldr addGroupMessage existingMessages newMessages
+
+
 messagesForContactId : ContactId -> List TextMessage -> List TextMessage
 messagesForContactId contactId =
     filter (textMessageMatchesContact contactId) >> sortBy .id
+
+
+messagesForGroupId : GroupId -> List GroupTextMessage -> List GroupTextMessage
+messagesForGroupId groupId =
+    filter ((==) groupId << .id << .group) >> sortBy .id
 
 
 textMessageMatchesContact : ContactId -> TextMessage -> Bool

@@ -9,3 +9,10 @@ type alias Group =
     { id : GroupId
     , label : String
     }
+
+
+emptyGroup : Group
+emptyGroup =
+    { id = 0
+    , label = ""
+    }

@@ -17,3 +17,16 @@ put url body decoder =
         , timeout = Nothing
         , withCredentials = False
         }
+
+
+delete : String -> Body -> Json.Decode.Decoder a -> Request a
+delete url body decoder =
+    request
+        { method = "DELETE"
+        , headers = []
+        , url = url
+        , body = body
+        , expect = expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }

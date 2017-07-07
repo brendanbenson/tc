@@ -7,7 +7,7 @@ import Contacts.ViewHelpers exposing (contactName)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Messages exposing (Msg(CreateContact, InputOmniSearch, OpenCreateContactModal, OpenThread))
+import Messages exposing (Msg(CreateContact, InputOmniSearch, OpenCreateContactModal, OpenContactThread))
 import Models exposing (Model)
 
 
@@ -55,7 +55,7 @@ contactSuggestion model contactId =
         contact =
             getContact model.contacts contactId
     in
-        div [ class "suggestion", onClick (OpenThread contactId) ]
+        div [ class "suggestion", onClick (OpenContactThread contactId) ]
             [ span [ class "label" ] [ text "To: " ]
             , span [ class "body" ] [ text <| contactName contact ]
             ]

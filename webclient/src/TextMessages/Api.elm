@@ -1,11 +1,12 @@
 module TextMessages.Api exposing (..)
 
 import Contacts.Models exposing (ContactId)
+import Groups.Models exposing (GroupId)
 import Http exposing (Error, jsonBody)
-import Messages exposing (Msg(FetchedLatestThreads, FetchedTextMessagesForContact))
-import TextMessages.Decoders exposing (decodeTextMessage, decodeTextMessageList)
+import Messages exposing (Msg(FetchedLatestThreads, FetchedTextMessagesForContact, FetchedTextMessagesForGroup))
+import TextMessages.Decoders exposing (decodeGroupTextMessage, decodeGroupTextMessageList, decodeTextMessage, decodeTextMessageList)
 import TextMessages.Encoders exposing (createTextMessageRequest)
-import TextMessages.Models exposing (TextMessage)
+import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 
 
 fetchLatestThreads : Cmd Msg
@@ -32,6 +33,18 @@ fetchListForContact contactId =
         Http.send FetchedTextMessagesForContact request
 
 
+fetchListForGroup : GroupId -> Cmd Msg
+fetchListForGroup groupId =
+    let
+        url =
+            "/groups/" ++ (toString groupId) ++ "/text-messages"
+
+        request =
+            Http.get url decodeGroupTextMessageList
+    in
+        Http.send FetchedTextMessagesForGroup request
+
+
 sendContactMessage : ContactId -> String -> (Result Error TextMessage -> Msg) -> Cmd Msg
 sendContactMessage contactId body handler =
     let
@@ -43,5 +56,20 @@ sendContactMessage contactId body handler =
 
         request =
             Http.post url requestBody decodeTextMessage
+    in
+        Http.send handler request
+
+
+sendGroupMessage : GroupId -> String -> (Result Error GroupTextMessage -> Msg) -> Cmd Msg
+sendGroupMessage groupId body handler =
+    let
+        url =
+            "/groups/" ++ (toString groupId) ++ "/text-messages"
+
+        requestBody =
+            createTextMessageRequest body |> jsonBody
+
+        request =
+            Http.post url requestBody decodeGroupTextMessage
     in
         Http.send handler request

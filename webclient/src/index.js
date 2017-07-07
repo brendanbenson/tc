@@ -32,8 +32,10 @@ function connectAndReconnect(successCallback) {
     ws = new SockJS(socketUrl);
     client = Stomp.over(ws);
     client.connect({}, function (frame) {
+        app.ports.connectedToTextMessages.send(true);
         successCallback();
     }, function () {
+        app.ports.connectedToTextMessages.send(false);
         setTimeout(function () {
             connectAndReconnect(successCallback);
         }, 10000);

@@ -1,16 +1,13 @@
 module TextMessages.Dashboard exposing (..)
 
-import Char exposing (isDigit)
 import Contacts.Helpers exposing (getContact)
-import Contacts.Models exposing (Contact, ContactId)
 import Contacts.ViewHelpers exposing (contactName)
-import Groups.Models exposing (Group)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState, UserMessage(ErrorMessage))
+import Models exposing (Model, ContactThreadState, UserMessage(ErrorMessage))
 import TextMessages.Helpers exposing (latestThreads, messagesForContactId)
 import TextMessages.Models exposing (TextMessage, bodyMatchesString, threadContactId)
 import UserMessages exposing (userMessages)
@@ -101,7 +98,7 @@ threadSummary model textMessage =
     in
         div
             [ class "thread-summary"
-            , onClick (OpenThread contactId)
+            , onClick (OpenContactThread contactId)
             ]
             [ div [ class "thread-summary-title" ] [ text <| contactName contact ]
             , div [ class "thread-summary-body" ] [ text textMessage.body ]

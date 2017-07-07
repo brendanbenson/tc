@@ -1,6 +1,7 @@
 module TextMessages.Models exposing (..)
 
 import Contacts.Models exposing (Contact, ContactId)
+import Groups.Models exposing (Group)
 import String exposing (contains, toLower)
 
 
@@ -10,6 +11,13 @@ type alias TextMessage =
     , incoming : Bool
     , toContact : Contact
     , fromContact : Contact
+    }
+
+
+type alias GroupTextMessage =
+    { id : Int
+    , body : String
+    , group : Group
     }
 
 

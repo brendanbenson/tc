@@ -1,15 +1,16 @@
-module Thread exposing (view)
+module ContactThread exposing (view)
 
 import Contacts.Helpers
 import Contacts.Models exposing (Contact)
 import Contacts.ViewHelpers exposing (contactName)
-import Groups.Models exposing (Group)
+import Groups.Helpers
+import Groups.Models exposing (Group, GroupId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState)
+import Models exposing (Model, ContactThreadState)
 import TextMessages.Helpers exposing (messagesForContactId)
 import TextMessages.Models exposing (TextMessage, bodyMatchesString)
 
@@ -17,32 +18,29 @@ import TextMessages.Models exposing (TextMessage, bodyMatchesString)
 view : Model -> Html Msg
 view model =
     let
-        threadState =
-            model.threadState
-
         contact =
-            Contacts.Helpers.getContact model.contacts threadState.to
+            Contacts.Helpers.getContact model.contacts model.contactThreadState.to
     in
         div [ class "thread-container" ]
             [ div [ class "thread-title" ]
-                [ h2 [] [ text <| contactName contact, span [] [ text " " ] ]
+                [ h2 [] [ text <| contactName contact ]
                 ]
             , div [ class "thread-content" ]
                 [ div [ class "thread-messages-pane" ]
                     [ div [ class "thread-body", id "thread-body" ]
-                        [ threadMessages model threadState contact
+                        [ threadMessages model contact
                         ]
                     , div [ class "thread-footer" ]
-                        [ Html.form [ onSubmit (SendMessage threadState) ]
+                        [ Html.form [ onSubmit (SendMessage model.contactThreadState) ]
                             [ div [ class "input-container" ]
                                 [ input
                                     [ type_ "text"
                                     , class "message-input"
                                     , id "message-input"
                                     , placeholder "Type your message here"
-                                    , onInput (InputThreadMessage threadState)
-                                    , value threadState.draftMessage
-                                    , disabled threadState.sendingMessage
+                                    , onInput (InputThreadMessage model.contactThreadState)
+                                    , value model.contactThreadState.draftMessage
+                                    , disabled model.contactThreadState.sendingMessage
                                     ]
                                     []
                                 ]
@@ -52,28 +50,32 @@ view model =
                 , div [ class "thread-contact-pane" ]
                     [ contactDetails model contact
                     , h2 [ class "section-break" ]
-                        [ text "Options" ]
+                        [ text "Search" ]
                     , div [ class "content-block" ]
                         [ input
                             [ type_ "text"
-                            , placeholder "Search in thread"
+                            , placeholder "Type a search term"
                             , onInput InputThreadSearch
                             , value model.threadSearch
                             , class "thread-search"
                             ]
                             []
                         ]
-                    , h2 [ class "section-break" ] [ text "Groups" ]
+                    , h2 [ class "section-break" ] [ text "Group Membership" ]
                     , groups contact
+                    , h2 [ class "section-break spaced" ] [ text "Add to Group" ]
                     , div [ class "content-block" ] [ addToGroupSearch contact model ]
-                    , div [] [ loadingAddToGroupSuggestions model, addToGroupSuggestions contact model.groupAddSuggestions ]
+                    , div []
+                        [ loadingAddToGroupSuggestions model
+                        , addToGroupSuggestions model contact model.groupAddSuggestions
+                        ]
                     ]
                 ]
             ]
 
 
-threadMessages : Model -> ThreadState -> Contact -> Html Msg
-threadMessages model threadState contact =
+threadMessages : Model -> Contact -> Html Msg
+threadMessages model contact =
     div [ class "thread-messages" ]
         [ loadingMessages model
         , div []
@@ -81,7 +83,7 @@ threadMessages model threadState contact =
                 |> List.map messageView
                 << List.filter (bodyMatchesString model.threadSearch)
             )
-        , messageLoadingView threadState
+        , messageLoadingView model.contactThreadState
         ]
 
 
@@ -104,13 +106,13 @@ messageView textMessage =
         div [ class "message-bubble outgoing" ] [ text textMessage.body ]
 
 
-messageLoadingView : ThreadState -> Html Msg
-messageLoadingView threadState =
-    if threadState.sendingMessage == True then
+messageLoadingView : ContactThreadState -> Html Msg
+messageLoadingView contactThreadState =
+    if contactThreadState.sendingMessage == True then
         div [ class "message-bubble outgoing loading" ]
             [ i [ class "fa fa-spin fa-circle-o-notch" ] []
             , text " "
-            , text threadState.draftMessage
+            , text contactThreadState.draftMessage
             ]
     else
         span [] []
@@ -185,33 +187,45 @@ loadingAddToGroupSuggestions model =
 
 groups : Contact -> Html Msg
 groups contact =
-    div [] (List.map group contact.groups)
+    case List.length contact.groups of
+        0 ->
+            div [ class "content-block" ] [ text "No groups assigned" ]
+
+        _ ->
+            div [ class "suggestions" ] (List.map (group contact) (List.sortBy (String.toLower << .label) contact.groups))
 
 
-group : Group -> Html Msg
-group group_ =
-    div [ class "suggestion" ] [ div [ class "body" ] [ text group_.label ] ]
+group : Contact -> Group -> Html Msg
+group contact group_ =
+    div [ class "suggestion" ]
+        [ div [ class "body", onClick (OpenGroupThread group_.id) ] [ text group_.label ]
+        , div [ class "actions" ] [ a [ onClick (DeleteGroupMembership contact.id group_.id) ] [ i [ class "fa fa-close" ] [] ] ]
+        ]
 
 
 addToGroupSearch : Contact -> Model -> Html Msg
 addToGroupSearch contact model =
     input
         [ type_ "text"
-        , placeholder "Add to group"
+        , placeholder "Type a group name"
         , value model.addToGroupSearch
         , onInput (InputAddToGroupSearch contact)
         ]
         []
 
 
-addToGroupSuggestions : Contact -> List Group -> Html Msg
-addToGroupSuggestions contact groups =
-    div [] (List.map (addToGroupSuggestion contact) groups)
+addToGroupSuggestions : Model -> Contact -> List GroupId -> Html Msg
+addToGroupSuggestions model contact groupIds =
+    div [ class "suggestions" ] (List.map (addToGroupSuggestion model contact) groupIds)
 
 
-addToGroupSuggestion : Contact -> Group -> Html Msg
-addToGroupSuggestion contact group_ =
-    div [ class "suggestion", onClick (AddToGroup contact group_) ]
-        [ span [ class "label" ] [ text "Add to: " ]
-        , span [ class "body" ] [ text group_.label ]
-        ]
+addToGroupSuggestion : Model -> Contact -> GroupId -> Html Msg
+addToGroupSuggestion model contact groupId =
+    let
+        group =
+            Groups.Helpers.getGroup model.groups groupId
+    in
+        div [ class "suggestion", onClick (AddToGroup model.contactThreadState.to group) ]
+            [ span [ class "label" ] [ text "Add to: " ]
+            , span [ class "body" ] [ text group.label ]
+            ]

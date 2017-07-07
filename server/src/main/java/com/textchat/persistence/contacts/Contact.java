@@ -3,6 +3,7 @@ package com.textchat.persistence.contacts;
 import com.textchat.persistence.groups.Group;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +38,11 @@ public class Contact {
     }
 
     public List<Group> getGroups() {
-        return groups;
+        if (groups != null) {
+            return groups;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     public Long getId() {

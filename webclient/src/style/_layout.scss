@@ -28,6 +28,10 @@ h3 {
   margin: 0;
   padding: 0.2em 1em;
   font-size: 1em;
+
+  &.spaced {
+    margin-top: 1em;
+  }
 }
 
 a {
@@ -229,21 +233,34 @@ a:hover {
 
 .suggestion {
   padding: .5em 1em;
-  background-color: $simple;
   border-bottom: 1px solid white;
-  cursor: pointer;
+
+  &:nth-child(even) {
+    background-color: $simple;
+  }
+
+  &:nth-child(odd) {
+    background-color: darken($simple, 2);
+  }
 
   &:hover {
-    background-color: darken($simple, 1);
+    background-color: darken($simple, 4);
   }
 
   .label {
-
+    cursor: default;
   }
 
   .body {
     font-weight:400;
     color: $flair;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .actions {
+    display: inline-block;
+    float: right;
   }
 
   .loading {
@@ -286,8 +303,13 @@ a:hover {
   border-radius: .5em;
   box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
   background-color: $simple;
+  width: 18em;
 
   &.error {
     border-left: .5em solid $flair;
+  }
+
+  &.success {
+    border-left: .5em solid $scuba;
   }
 }

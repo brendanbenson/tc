@@ -2,11 +2,11 @@ module Messages exposing (..)
 
 import Authentication.Models exposing (AuthenticationResponse)
 import Contacts.Models exposing (Contact, ContactId)
-import Groups.Models exposing (Group)
+import Groups.Models exposing (Group, GroupId)
 import Http
-import Models exposing (ThreadState)
+import Models exposing (ContactThreadState, GroupThreadState)
 import Navigation exposing (Location)
-import TextMessages.Models exposing (TextMessage)
+import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 
 
 type
@@ -19,22 +19,35 @@ type
       --
       -- Text messages
     | ReceiveMessages String
+    | Connected Bool
       --
-      -- Threads
-    | OpenThread ContactId
+      -- Contact Threads
+    | OpenContactThread ContactId
     | FetchedTextMessagesForContact (Result Http.Error (List TextMessage))
     | StartComposing
-    | InputThreadMessage ThreadState String
-    | SendMessage ThreadState
-    | SentMessage ThreadState (Result Http.Error TextMessage)
+    | InputThreadMessage ContactThreadState String
+    | SendMessage ContactThreadState
+    | SentMessage ContactThreadState (Result Http.Error TextMessage)
     | InputThreadSearch String
       --
       -- Groups
     | InputAddToGroupSearch Contact String
     | SearchGroups Contact String
     | SearchedGroups String (Result Http.Error (List Group))
-    | AddToGroup Contact Group
+    | AddToGroup ContactId Group
     | AddedToGroup ContactId (Result Http.Error Group)
+    | OpenGroupThread GroupId
+    | GroupFetched (Result Http.Error Group)
+    | SendGroupMessage GroupThreadState
+    | SentGroupMessage GroupThreadState (Result Http.Error GroupTextMessage)
+    | InputGroupThreadMessage GroupThreadState String
+    | FetchedTextMessagesForGroup (Result Http.Error (List GroupTextMessage))
+    | FetchedContactsForGroup (Result Http.Error (List Contact))
+    | DeleteGroupMembership ContactId GroupId
+    | GroupMembershipDeleted ContactId (Result Http.Error Group)
+    | InputAddToGroupContactSearch Group String
+    | SuggestContactsForGroup Group String
+    | SuggestedContactsForGroup String (Result Http.Error (List Contact))
       --
       -- Thread summaries
     | FetchedLatestThreads (Result Http.Error (List TextMessage))

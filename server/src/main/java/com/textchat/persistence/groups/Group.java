@@ -13,7 +13,7 @@ public class Group {
     private Long id;
     private String label;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "groups")
     private List<Contact> contacts;
 
     public Group() {

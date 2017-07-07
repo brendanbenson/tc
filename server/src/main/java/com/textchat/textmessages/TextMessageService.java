@@ -2,6 +2,7 @@ package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
 import com.textchat.persistence.contacts.ContactRepository;
+import com.textchat.persistence.groups.Group;
 import com.textchat.persistence.textmessages.TextMessageRepository;
 import com.textchat.persistence.textmessages.TextMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TextMessageService {
@@ -25,6 +28,14 @@ public class TextMessageService {
         this.textMessageGateway = textMessageGateway;
         this.textMessageRepository = textMessageRepository;
         this.contactRepository = contactRepository;
+    }
+
+    public List<TextMessage> send(Group group, String body) {
+        return group
+                .getContacts()
+                .stream()
+                .map(contact -> send(contact, body))
+                .collect(Collectors.toList());
     }
 
     @Transactional

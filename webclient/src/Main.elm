@@ -3,11 +3,11 @@ module Main exposing (..)
 import Contacts.Models exposing (emptyContact)
 import Dict
 import Messages exposing (Msg(..))
-import Models exposing (Model, ThreadState, UserMessage(ErrorMessage), newThreadState)
+import Models exposing (ContactThreadState, Model, UserMessage(ErrorMessage), newContactThreadState, newGroupThreadState)
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(..), newUrl)
-import Update exposing (from, openDashboard, openThread, update)
+import Update exposing (from, openDashboard, openGroupThread, openThread, update)
 import View exposing (view)
 import Platform.Cmd exposing (Cmd)
 import TextMessages.Api exposing (fetchLatestThreads, fetchLatestThreads, fetchListForContact)
@@ -27,15 +27,23 @@ initialModel : Route -> Model
 initialModel route =
     { omniSearch = ""
     , messages = []
+    , groupMessages = []
+    , groupContacts = []
     , threadSearch = ""
     , addToGroupSearch = ""
     , loadingGroupSuggestions = False
     , groupAddSuggestions = []
+    , addToGroupContactSearch = ""
+    , loadingGroupContactSuggestions = False
+    , groupAddContactSuggestions = []
     , loadingContactMessages = False
+    , loadingGroupMessages = False
     , contactSuggestions = []
     , loadingContactSuggestions = False
-    , threadState = newThreadState 0
+    , contactThreadState = newContactThreadState 0
+    , groupThreadState = newGroupThreadState 0
     , contacts = Dict.empty
+    , groups = Dict.empty
     , editingContact = False
     , contactEdits = emptyContact
     , savingContactEdits = False
@@ -49,6 +57,7 @@ initialModel route =
     , sendingAuth = False
     , route = route
     , userMessages = []
+    , connectedToServer = False
     }
 
 
@@ -68,6 +77,9 @@ init location =
             ContactThreadRoute contactId ->
                 model ! [ fetchLatestThreads ] |> openThread contactId
 
+            GroupThreadRoute groupId ->
+                model ! [ fetchLatestThreads ] |> openGroupThread groupId
+
             LoginRoute ->
                 model ! []
 
@@ -77,4 +89,7 @@ init location =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Ports.receiveTextMessages ReceiveMessages
+    Sub.batch
+        [ Ports.receiveTextMessages ReceiveMessages
+        , Ports.connectedToTextMessages Connected
+        ]

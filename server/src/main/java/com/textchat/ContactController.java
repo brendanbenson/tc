@@ -2,21 +2,29 @@ package com.textchat;
 
 import com.textchat.persistence.contacts.Contact;
 import com.textchat.persistence.contacts.ContactRepository;
+import com.textchat.persistence.groups.Group;
+import com.textchat.persistence.groups.GroupRepository;
 import com.textchat.textmessages.ContactResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsLast;
 
 @RestController
 public class ContactController {
     private ContactRepository contactRepository;
+    private GroupRepository groupRepository;
 
     @Autowired
-    public ContactController(ContactRepository contactRepository) {
+    public ContactController(ContactRepository contactRepository, GroupRepository groupRepository) {
         this.contactRepository = contactRepository;
+        this.groupRepository = groupRepository;
     }
 
     @PostMapping("/contacts")
@@ -44,6 +52,19 @@ public class ContactController {
         return contactRepository
                 .search(q)
                 .stream()
+                .map(ContactResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/groups/{groupId}/contacts")
+    public List<ContactResponse> getForGroup(@PathVariable Long groupId) {
+        Group group = groupRepository.findOne(groupId);
+
+        return group
+                .getContacts()
+                .stream()
+                .sorted(nullsLast(comparing(Contact::getLabel))
+                        .thenComparing(Contact::getPhoneNumber))
                 .map(ContactResponse::new)
                 .collect(Collectors.toList());
     }
