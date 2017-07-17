@@ -13,6 +13,10 @@ input {
   &::placeholder, &:disabled {
     color: $simple-content;
   }
+
+  &.error {
+    border-color: $flair;
+  }
 }
 
 button {
