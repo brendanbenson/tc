@@ -40,6 +40,14 @@ view model content =
             , content
             ]
         , modal model.createContactModalOpen (createContactModal model)
+        , modal (not model.connectedToServer) (disconnectMessage)
+        ]
+
+
+disconnectMessage : Html Msg
+disconnectMessage =
+    div []
+        [ h2 [] [ i [ class "fa fa-spin fa-circle-o-notch" ] [], text " Connecting to server..." ]
         ]
 
 
