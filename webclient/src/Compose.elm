@@ -18,8 +18,9 @@ view model =
             [ input
                 [ onInput InputOmniSearch
                 , value model.omniSearch
-                , placeholder "Enter name or number"
-                , id "contact-search"
+                , placeholder "Enter contact name, group name, or phone number"
+                , id "omni-search"
+                , class "omni-search"
                 ]
                 []
             ]

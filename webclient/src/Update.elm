@@ -447,7 +447,7 @@ openDashboard ( model, cmd ) =
           , subscribeToTextMessages ()
           , fetchLatestThreads
           ]
-        |> focus "contact-search"
+        |> focus "omni-search"
 
 
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )

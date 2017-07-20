@@ -50,7 +50,7 @@ view model =
                 , div [ class "thread-contact-pane" ]
                     [ contactDetails model contact
                     , h2 [ class "section-break" ]
-                        [ text "Search" ]
+                        [ text "Search Messages" ]
                     , div [ class "content-block" ]
                         [ input
                             [ type_ "text"
