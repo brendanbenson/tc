@@ -6,8 +6,8 @@ class TextMessageResponse {
     private Long id;
     private String body;
     private Boolean incoming;
-    private ContactResponse toContact;
-    private ContactResponse fromContact;
+    private Long toContactId;
+    private Long fromContactId;
     private Boolean read;
 
     public TextMessageResponse() {
@@ -17,15 +17,15 @@ class TextMessageResponse {
             Long id,
             String body,
             Boolean incoming,
-            ContactResponse toContact,
-            ContactResponse fromContact,
+            Long toContactId,
+            Long fromContactId,
             Boolean read
     ) {
         this.id = id;
         this.body = body;
         this.incoming = incoming;
-        this.toContact = toContact;
-        this.fromContact = fromContact;
+        this.toContactId = toContactId;
+        this.fromContactId = fromContactId;
         this.read = read;
     }
 
@@ -34,8 +34,8 @@ class TextMessageResponse {
                 textMessage.getId(),
                 textMessage.getBody(),
                 textMessage.getIncoming(),
-                new ContactResponse(textMessage.getToContact()),
-                new ContactResponse(textMessage.getFromContact()),
+                textMessage.getToContact().getId(),
+                textMessage.getFromContact().getId(),
                 read
         );
     }
@@ -52,12 +52,12 @@ class TextMessageResponse {
         return incoming;
     }
 
-    public ContactResponse getToContact() {
-        return toContact;
+    public Long getToContactId() {
+        return toContactId;
     }
 
-    public ContactResponse getFromContact() {
-        return fromContact;
+    public Long getFromContactId() {
+        return fromContactId;
     }
 
     public Boolean getRead() {
@@ -74,8 +74,9 @@ class TextMessageResponse {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (body != null ? !body.equals(that.body) : that.body != null) return false;
         if (incoming != null ? !incoming.equals(that.incoming) : that.incoming != null) return false;
-        if (toContact != null ? !toContact.equals(that.toContact) : that.toContact != null) return false;
-        return fromContact != null ? fromContact.equals(that.fromContact) : that.fromContact == null;
+        if (toContactId != null ? !toContactId.equals(that.toContactId) : that.toContactId != null) return false;
+        if (fromContactId != null ? !fromContactId.equals(that.fromContactId) : that.fromContactId != null) return false;
+        return read != null ? read.equals(that.read) : that.read == null;
     }
 
     @Override
@@ -83,8 +84,9 @@ class TextMessageResponse {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (body != null ? body.hashCode() : 0);
         result = 31 * result + (incoming != null ? incoming.hashCode() : 0);
-        result = 31 * result + (toContact != null ? toContact.hashCode() : 0);
-        result = 31 * result + (fromContact != null ? fromContact.hashCode() : 0);
+        result = 31 * result + (toContactId != null ? toContactId.hashCode() : 0);
+        result = 31 * result + (fromContactId != null ? fromContactId.hashCode() : 0);
+        result = 31 * result + (read != null ? read.hashCode() : 0);
         return result;
     }
 }

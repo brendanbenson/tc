@@ -4,7 +4,7 @@ import Contacts.Models exposing (ContactId)
 import Groups.Models exposing (GroupId)
 import Http exposing (Error, jsonBody)
 import Messages exposing (Msg(FetchedLatestThreads, FetchedTextMessagesForContact, FetchedTextMessagesForGroup))
-import TextMessages.Decoders exposing (decodeGroupTextMessage, decodeGroupTextMessageList, decodeTextMessage, decodeTextMessageList)
+import TextMessages.Decoders exposing (decodeAugmentedTextMessageResponse, decodeGroupTextMessage, decodeGroupTextMessageList, decodeTextMessage, decodeTextMessageList)
 import TextMessages.Encoders exposing (createTextMessageRequest)
 import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 
@@ -16,7 +16,7 @@ fetchLatestThreads =
             "/text-messages"
 
         request =
-            Http.get url decodeTextMessageList
+            Http.get url decodeAugmentedTextMessageResponse
     in
         Http.send FetchedLatestThreads request
 

@@ -18,7 +18,7 @@ import Routing exposing (Route(ComposeRoute, ContactThreadRoute, GroupThreadRout
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, fetchListForGroup, sendContactMessage, sendGroupMessage)
-import TextMessages.Decoders exposing (decodeTextMessage)
+import TextMessages.Decoders exposing (decodeAugmentedTextMessageResponse, decodeTextMessage)
 import TextMessages.Helpers
 import TextMessages.Models exposing (GroupTextMessage, TextMessage)
 import Time exposing (millisecond)
@@ -63,24 +63,20 @@ update msg model =
             else
                 from model
 
-        FetchedLatestThreads (Ok messages) ->
-            let
-                allContacts =
-                    List.concat [ List.map .toContact messages, List.map .fromContact messages ]
-            in
-                from model |> updateContacts allContacts |> addMessages messages
+        FetchedLatestThreads (Ok response) ->
+            from model |> updateContacts response.contacts |> addMessages response.textMessages
 
         FetchedLatestThreads (Err e) ->
             from model |> addHttpError e
 
         ReceiveMessages textMessageResponse ->
-            case decodeString decodeTextMessage textMessageResponse of
-                Ok textMessage ->
+            case decodeString decodeAugmentedTextMessageResponse textMessageResponse of
+                Ok response ->
                     from model
-                        |> addMessage textMessage
-                        |> updateContacts [ textMessage.toContact, textMessage.fromContact ]
+                        |> addMessages response.textMessages
+                        |> updateContacts response.contacts
                         |> scrollToBottom "thread-body"
-                        |> dingIf textMessage.incoming
+                        |> dingIf (List.any .incoming response.textMessages)
 
                 Err e ->
                     Debug.log e <| (from model |> addStringError "An error occurred while receiving text messages.")

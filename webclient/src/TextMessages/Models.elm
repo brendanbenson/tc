@@ -9,8 +9,8 @@ type alias TextMessage =
     { id : Int
     , body : String
     , incoming : Bool
-    , toContact : Contact
-    , fromContact : Contact
+    , toContactId : ContactId
+    , fromContactId : ContactId
     }
 
 
@@ -21,12 +21,18 @@ type alias GroupTextMessage =
     }
 
 
+type alias AugmentedTextMessageResponse =
+    { textMessages : List TextMessage
+    , contacts : List Contact
+    }
+
+
 threadContactId : TextMessage -> ContactId
 threadContactId textMessage =
     if textMessage.incoming == True then
-        textMessage.fromContact.id
+        textMessage.fromContactId
     else
-        textMessage.toContact.id
+        textMessage.toContactId
 
 
 bodyMatchesString : String -> TextMessage -> Bool

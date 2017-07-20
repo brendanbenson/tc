@@ -1,10 +1,10 @@
 module TextMessages.Decoders exposing (..)
 
-import Contacts.Decoders exposing (decodeContact)
+import Contacts.Decoders exposing (decodeContactList)
 import Groups.Decoders exposing (decodeGroup)
 import Json.Decode exposing (Decoder, bool, decodeString, int, list, maybe, string)
 import Json.Decode.Pipeline exposing (decode, required)
-import TextMessages.Models exposing (GroupTextMessage, TextMessage)
+import TextMessages.Models exposing (AugmentedTextMessageResponse, GroupTextMessage, TextMessage)
 
 
 decodeTextMessageList : Decoder (List TextMessage)
@@ -18,8 +18,8 @@ decodeTextMessage =
         |> required "id" int
         |> required "body" string
         |> required "incoming" bool
-        |> required "toContact" decodeContact
-        |> required "fromContact" decodeContact
+        |> required "toContactId" int
+        |> required "fromContactId" int
 
 
 decodeGroupTextMessageList : Decoder (List GroupTextMessage)
@@ -33,3 +33,10 @@ decodeGroupTextMessage =
         |> required "id" int
         |> required "body" string
         |> required "group" decodeGroup
+
+
+decodeAugmentedTextMessageResponse : Decoder AugmentedTextMessageResponse
+decodeAugmentedTextMessageResponse =
+    decode AugmentedTextMessageResponse
+        |> required "textMessages" (decodeTextMessageList)
+        |> required "contacts" (decodeContactList)

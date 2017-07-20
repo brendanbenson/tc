@@ -1,7 +1,6 @@
 package com.textchat.textmessages;
 
 import com.textchat.persistence.contacts.Contact;
-import com.textchat.persistence.contacts.ContactReadRepository;
 import com.textchat.persistence.contacts.ContactRepository;
 import com.textchat.persistence.textmessages.TextMessage;
 import com.textchat.persistence.textmessages.TextMessageRepository;
@@ -11,14 +10,16 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @RestController
 public class TextMessagesController {
     private TextMessageRepository textMessageRepository;
     private ContactRepository contactRepository;
-    private ContactReadRepository contactReadRepository;
     private SimpMessagingTemplate simpMessagingTemplate;
     private TextMessageService textMessageService;
 
@@ -26,26 +27,36 @@ public class TextMessagesController {
     public TextMessagesController(
             TextMessageRepository textMessageRepository,
             ContactRepository contactRepository,
-            ContactReadRepository contactReadRepository,
             SimpMessagingTemplate simpMessagingTemplate,
             TextMessageService textMessageService
     ) {
         this.textMessageRepository = textMessageRepository;
         this.contactRepository = contactRepository;
-        this.contactReadRepository = contactReadRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.textMessageService = textMessageService;
     }
 
     @GetMapping("/text-messages")
-    public List<TextMessageResponse> list() {
+    public AugmentedTextMessageResponse list() {
         List<TextMessage> latestThreads = textMessageRepository
                 .findLatestThreads();
 
-        return latestThreads
+        List<TextMessageResponse> textMessageResponses = latestThreads
                 .stream()
                 .map(textMessage -> new TextMessageResponse(textMessage, false)) // TODO
                 .collect(toList());
+
+        List<ContactResponse> contactResponses = latestThreads
+                .stream()
+                .flatMap(textMessage ->
+                        Stream.of(
+                                new ContactResponse(textMessage.getToContact()),
+                                new ContactResponse(textMessage.getFromContact())
+                        )
+                )
+                .collect(toList());
+
+        return new AugmentedTextMessageResponse(textMessageResponses, contactResponses);
     }
 
     @GetMapping("/contacts/{contactId}/text-messages")
@@ -70,9 +81,19 @@ public class TextMessagesController {
                 sendMessageRequest.getBody()
         );
 
-        simpMessagingTemplate.convertAndSend("/text-messages", new TextMessageResponse(textMessage, false));
+        TextMessageResponse textMessageResponse = new TextMessageResponse(textMessage, false);
 
-        return new TextMessageResponse(textMessage, false); // TODO
+        simpMessagingTemplate.convertAndSend("/text-messages",
+                new AugmentedTextMessageResponse(
+                        singletonList(textMessageResponse),
+                        asList(
+                                new ContactResponse(textMessage.getToContact()),
+                                new ContactResponse(textMessage.getFromContact())
+                        )
+                )
+        );
+
+        return textMessageResponse; // TODO
     }
 
     // TODO: add some security here so random people can't hit this endpoint
@@ -84,6 +105,12 @@ public class TextMessagesController {
 
         TextMessage textMessage = textMessageService.recordReceipt(from, to, body);
 
-        simpMessagingTemplate.convertAndSend("/text-messages", new TextMessageResponse(textMessage, false));
+        simpMessagingTemplate.convertAndSend("/text-messages", new AugmentedTextMessageResponse(
+                singletonList(new TextMessageResponse(textMessage, false)),
+                asList(
+                        new ContactResponse(textMessage.getToContact()),
+                        new ContactResponse(textMessage.getFromContact()))
+                )
+        );
     }
 }

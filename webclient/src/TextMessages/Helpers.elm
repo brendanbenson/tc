@@ -41,9 +41,9 @@ messagesForGroupId groupId =
 textMessageMatchesContact : ContactId -> TextMessage -> Bool
 textMessageMatchesContact contactId textMessage =
     if textMessage.incoming == True then
-        textMessage.fromContact.id == contactId
+        textMessage.fromContactId == contactId
     else
-        textMessage.toContact.id == contactId
+        textMessage.toContactId == contactId
 
 
 latestThreads : List TextMessage -> List TextMessage

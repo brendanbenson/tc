@@ -6,7 +6,7 @@ import Groups.Models exposing (Group, GroupId)
 import Http
 import Models exposing (ContactThreadState, GroupThreadState)
 import Navigation exposing (Location)
-import TextMessages.Models exposing (GroupTextMessage, TextMessage)
+import TextMessages.Models exposing (AugmentedTextMessageResponse, GroupTextMessage, TextMessage)
 
 
 type
@@ -50,7 +50,7 @@ type
     | SuggestedContactsForGroup String (Result Http.Error (List Contact))
       --
       -- Thread summaries
-    | FetchedLatestThreads (Result Http.Error (List TextMessage))
+    | FetchedLatestThreads (Result Http.Error AugmentedTextMessageResponse)
       --
       -- Contact management
     | CreateContact String
