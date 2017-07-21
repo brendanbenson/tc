@@ -22,21 +22,29 @@ public class ContactController {
     private ContactRepository contactRepository;
     private GroupRepository groupRepository;
     private CreateContactRequestValidator createContactRequestValidator;
+    private UpdateContactRequestValidator updateContactRequestValidator;
 
     @Autowired
     public ContactController(
             ContactRepository contactRepository,
             GroupRepository groupRepository,
-            CreateContactRequestValidator createContactRequestValidator
+            CreateContactRequestValidator createContactRequestValidator,
+            UpdateContactRequestValidator updateContactRequestValidator
     ) {
         this.contactRepository = contactRepository;
         this.groupRepository = groupRepository;
         this.createContactRequestValidator = createContactRequestValidator;
+        this.updateContactRequestValidator = updateContactRequestValidator;
     }
 
-    @InitBinder
-    public void setupBinder(WebDataBinder binder) {
+    @InitBinder("createContactRequest")
+    public void initCreateBinder(WebDataBinder binder) {
         binder.addValidators(createContactRequestValidator);
+    }
+
+    @InitBinder("updateContactRequest")
+    public void initUpdateValidator(WebDataBinder binder) {
+        binder.addValidators(updateContactRequestValidator);
     }
 
     @PostMapping("/contacts")
@@ -48,7 +56,7 @@ public class ContactController {
     }
 
     @PutMapping("/contacts")
-    public ContactResponse update(@RequestBody UpdateContactRequest updateContactRequest) {
+    public ContactResponse update(@Valid @RequestBody UpdateContactRequest updateContactRequest) {
         Contact contact = contactRepository.findOne(updateContactRequest.getId());
 
         contact.setLabel(updateContactRequest.getLabel());
@@ -80,23 +88,4 @@ public class ContactController {
                 .map(ContactResponse::new)
                 .collect(Collectors.toList());
     }
-
-    private static class UpdateContactRequest {
-        private Long id;
-        private String phoneNumber;
-        private String label;
-
-        public Long getId() {
-            return id;
-        }
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
-
 }

@@ -7,22 +7,22 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
-public class CreateContactRequestValidator implements Validator {
+public class UpdateContactRequestValidator implements Validator {
     private PhoneNumberLookupService phoneNumberLookupService;
 
     @Autowired
-    public CreateContactRequestValidator(PhoneNumberLookupService phoneNumberLookupService) {
+    public UpdateContactRequestValidator(PhoneNumberLookupService phoneNumberLookupService) {
         this.phoneNumberLookupService = phoneNumberLookupService;
     }
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return CreateContactRequest.class.equals(clazz);
+        return UpdateContactRequest.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        CreateContactRequest createContactRequest = (CreateContactRequest) target;
+        UpdateContactRequest createContactRequest = (UpdateContactRequest) target;
 
         String phoneNumber = createContactRequest.getPhoneNumber();
 
