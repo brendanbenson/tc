@@ -1,0 +1,244 @@
+/**
+*****************************************
+@File: Fedrex Theme Colors
+
+* This file contains the colors for the actual theme, this
+is the file you need to edit to change the color of the
+theme.
+*****************************************
+**/
+.primary-color{
+    color: #60B99A;
+}
+.bg-theme-primary{
+    background: #60B99A;
+}
+header.solid-bg{
+    background: #60B99A;
+}
+#page-loader .loader-container{
+    background: #60B99A;
+}
+.owl-theme .owl-controls .owl-buttons div{
+    background: #60B99A;
+}
+.owl-theme .owl-controls .owl-page span{
+    background: #60B99A;
+}
+.super-title div.seperator:before{
+    background: #60B99A;
+}
+.main-title .seperator:before{
+    background: #60B99A;
+}
+.iconbox-center .icon{
+    background: #60B99A;
+}
+.iconbox-center:hover .icon{
+    border: 3px solid #F77825;
+}
+.pagination a {
+    color: #60B99A;
+}
+.pagination a:before {
+    background-color: #60B99A;
+}
+.btn-white-ghost:hover,.btn-white-ghost:focus,.btn-white-ghost:active{
+    color: #60B99A;
+}
+.btn-rounded-white-fill{
+    color: #60B99A;
+}
+.btn-rounded-white-fill:hover,.btn-rounded-white-fill:focus,.btn-rounded-white-fill:active{
+    color: #60B99A;
+}
+.btn-theme-primary{
+    border: 2px solid #F77825;
+    background-color: #F77825;
+}
+.btn-theme-primary:hover,.btn-theme-primary:focus,.btn-theme-primary:active{
+    background-color: #F77825;
+}
+.btn-theme-color{
+    background-color: #60B99A;
+}
+.btn-theme-color:hover,.btn-theme-color:focus,.btn-theme-color:active{
+    background-color: #F77825;
+}
+nav.navbar .menu-block{
+    background: #60B99A;
+}
+section.demo-request{
+    background: #60B99A;
+}
+section.testimonials .testimonials-holder{
+    background-color: #60B99A;
+}
+section.process h4 span{
+    color: #60B99A;
+}
+section.main-features{
+    background: #60B99A;
+}
+section.main-features .icon {
+    color: #60B99A;
+}
+section.services .service-items span.service-icon{
+    color: #60B99A;
+}
+section.counter{
+    background: #60B99A;
+}
+div.faq-categories .nav-pills{
+    border: 1px solid #60B99A;
+    background: #60B99A;
+}
+div.faq-categories .nav-pills li{
+    border-bottom: 1px solid #60B99A;
+}
+div.faq-categories .nav-pills li a:hover,
+div.faq-categories .nav-pills li a:focus{
+    background: #F77825;
+}
+div.faq-categories .nav-pills > li.active > a,
+div.faq-categories .nav-pills > li.active > a:hover,
+div.faq-categories .nav-pills > li.active > a:focus {
+    background: #F77825 !important;
+}
+section.pricing .price .featured-pricing{
+    background: #60B99A;
+}
+section.pricing .price .theme-color{
+    background: #F77825;
+}
+section.pricing-table .price-features li i{
+    color: #60B99A;
+}
+section.pricing-table .pricing-col ul li.footer{
+    background: #F77825;
+}
+.section_login .section_loginForm .input-group-addon{
+    background: #60B99A;
+    border: 1px solid #60B99A;
+}
+section.contact .contact-address{
+    background-color: #60B99A;
+}
+section.block-style-promo::before,
+section.main-banner:before,
+#footer.dark-footer .mobile-app-download:before,
+header.image-bg:before,
+header.video-bg:before{
+    background-color: rgba(46,65,111,0.9);
+}
+header.gradient-bg:before{
+    background: rgba(46,65,111,0.9);
+    background: -moz-linear-gradient(top, rgba(46,65,111,0.9) 0%, rgba(1,131,187,0.9) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(46,65,111,0.9)), color-stop(100%, rgba(1,131,187,0.9)));
+    background: -webkit-linear-gradient(top, rgba(46,65,111,0.9) 0%, rgba(1,131,187,0.9) 100%);
+    background: -o-linear-gradient(top, rgba(46,65,111,0.9) 0%, rgba(1,131,187,0.9) 100%);
+    background: -ms-linear-gradient(top, rgba(46,65,111,0.9) 0%, rgba(1,131,187,0.9) 100%);
+    background: linear-gradient(to bottom, rgba(46,65,111,0.9) 0%, rgba(1,131,187,0.9) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2e416f', endColorstr='#0183bb', GradientType=0 );
+
+}
+header.video-bg,header.slider-bg{
+    background-color: rgba(1, 1, 1, 0.7);
+}
+#footer.light-footer .btn-app-download,
+#footer.light-footer .btn-app-download:hover,
+#footer.light-footer .btn-app-download:focus,
+#footer.light-footer .btn-app-download:active{
+    border: 2px solid #60B99A;
+    color: #60B99A;
+}
+#footer .main-footer h3:after{
+    background: #F77825;
+}
+#footer .footer-navigation-widget li a:hover,
+#footer .footer-navigation-widget li a:focus,
+#footer .footer-navigation-widget li a:active{
+    color: #F77825;
+}
+#footer .contact-widget > .contact-item span{
+    color: #F77825;
+}
+#footer .form-subscribe  .btn-suscribe{
+    background: #F77825;
+    border:1px solid #F77825;
+}
+.wave1{
+    fill:#5d75b5;
+}
+.wave2{
+    fill:#F77825;
+}
+.wave3{
+    fill:#60B99A;
+}
+
+/*
+Color
+=========================== */
+nav.navbar.bootsnav ul.dropdown-menu.megamenu-content .content ul.menu-col li a:hover,
+.side .widget ul.link li a:hover,
+.side .widget ul.link li a:focus,
+.check-list li:before,
+ul.cart-list > li > h6 > a,
+.attr-nav > ul > li > a:hover,
+.attr-nav > ul > li > a:focus,
+nav.navbar-sidebar ul.nav li.dropdown.on > a,
+nav.navbar-sidebar .dropdown .megamenu-content .col-menu.on .title,
+nav.navbar-sidebar ul.nav li.dropdown ul.dropdown-menu li a:hover,
+nav.navbar ul.nav li.dropdown.on > a,
+nav.navbar.navbar-inverse ul.nav li.dropdown.on > a,
+nav.navbar-sidebar ul.nav li.dropdown.on ul.dropdown-menu li.dropdown.on > a,
+nav.navbar .dropdown .megamenu-content .col-menu.on .title,
+nav.navbar ul.nav > li > a:hover,
+nav.navbar ul.nav > li.active > a:hover,
+nav.navbar ul.nav li.active > a,
+nav.navbar li.dropdown ul.dropdown-menu > li a:hover{
+    color: #687fb9;
+}
+
+nav.navbar.navbar-transparent ul.nav > li > a:hover,
+nav.navbar.no-background ul.nav > li > a:hover,
+nav.navbar ul.nav li.scroll.active > a,
+nav.navbar.navbar-dark ul.nav li.dropdown ul.dropdown-menu  > li > a:hover,
+nav.navbar ul.nav li.dropdown.on > a,
+nav.navbar-dark ul.nav li.dropdown.on > a{
+    color: #687fb9 !important;
+}
+
+@media(max-width:920px){
+    nav.navbar .dropdown .megamenu-content .col-menu ul > li > a:hover,
+    nav.navbar.navbar-dark .dropdown .megamenu-content .col-menu .title:hover{
+        color: #687fb9 !important;
+    }
+}
+
+/*
+Border
+=========================== */
+ul.cart-list > li.total > .btn{
+    border-color: #687fb9;
+}
+
+nav.navbar li.dropdown ul.dropdown-menu{
+    border-top-color: #687fb9 !important;
+}
+
+/*
+Background
+=========================== */
+ul.cart-list > li.total > .btn,
+.attr-nav > ul > li > a span.badge,
+nav.navbar .share ul > li > a:hover,
+nav.navbar .share ul > li > a:focus{
+    background-color: #687fb9;
+}
+
+ul.cart-list > li.total > .btn:hover,
+ul.cart-list > li.total > .btn:focus{
+    background-color: #687fb9 !important;
+}
