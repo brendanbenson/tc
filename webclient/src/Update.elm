@@ -14,10 +14,10 @@ import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
 import Models exposing (Model, UserMessage(ErrorMessage, SuccessMessage), newContactThreadState, newGroupThreadState)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(ComposeRoute, ContactThreadRoute, GroupThreadRoute, LoginRoute, NotFoundRoute), newUrl, parseLocation, toUrl)
+import Routing exposing (Route(ComposeRoute, ContactThreadRoute, ContactListRoute, GroupThreadRoute, LoginRoute, NotFoundRoute), newUrl, parseLocation, toUrl)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
-import TextMessages.Api exposing (fetchLatestThreads, fetchListForContact, fetchListForGroup, sendContactMessage, sendGroupMessage)
+import TextMessages.Api exposing (fetchContacts, fetchLatestThreads, fetchListForContact, fetchListForGroup, sendContactMessage, sendGroupMessage)
 import TextMessages.Decoders exposing (decodeAugmentedTextMessageResponse, decodeTextMessage)
 import TextMessages.Helpers
 import TextMessages.Models exposing (GroupTextMessage, TextMessage)
@@ -100,6 +100,15 @@ update msg model =
         StartComposing ->
             model ! [ newUrl <| ComposeRoute ]
 
+        ListContacts ->
+            model ! [ newUrl <| ContactListRoute ]
+
+        FetchedContacts (Ok contacts) ->
+            from model |> updateContacts contacts
+
+        FetchedContacts (Err e) ->
+            from model |> addHttpError e
+
         CreateContact phoneNumber ->
             from model |> createContact ContactCreated "" phoneNumber
 
@@ -139,13 +148,22 @@ update msg model =
             from { model | savingContactEdits = False } |> addHttpError e
 
         OpenCreateContactModal name ->
-            from
-                { model
-                    | createContactModalOpen = True
-                    , createContactName = name
-                    , createContactPhoneNumber = ""
-                }
-                |> focus "create-contact-phone-number"
+            let
+                focusField =
+                    case name of
+                        "" ->
+                            "create-contact-name"
+
+                        _ ->
+                            "create-contact-phone-number"
+            in
+                from
+                    { model
+                        | createContactModalOpen = True
+                        , createContactName = name
+                        , createContactPhoneNumber = ""
+                    }
+                    |> focus focusField
 
         CloseCreateContactModal ->
             { model | createContactModalOpen = False } ! []
@@ -418,6 +436,9 @@ update msg model =
                     ComposeRoute ->
                         from model |> updateRoute route |> openDashboard
 
+                    ContactListRoute ->
+                        from model |> updateRoute route |> openContacts
+
                     ContactThreadRoute contactId ->
                         from model |> updateRoute route |> openThread contactId
 
@@ -444,6 +465,11 @@ openDashboard ( model, cmd ) =
           , fetchLatestThreads
           ]
         |> focus "omni-search"
+
+
+openContacts : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+openContacts ( model, cmd ) =
+    model ! [ cmd, fetchContacts ]
 
 
 openThread : ContactId -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )

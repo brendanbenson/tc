@@ -7,7 +7,7 @@ import Models exposing (ContactThreadState, Model, UserMessage(ErrorMessage), ne
 import Navigation exposing (Location)
 import Ports exposing (subscribeToTextMessages)
 import Routing exposing (Route(..), newUrl)
-import Update exposing (from, openDashboard, openGroupThread, openThread, update)
+import Update exposing (from, openContacts, openDashboard, openGroupThread, openThread, update)
 import View exposing (view)
 import Platform.Cmd exposing (Cmd)
 import TextMessages.Api exposing (fetchLatestThreads, fetchLatestThreads, fetchListForContact)
@@ -73,6 +73,9 @@ init location =
         case currentRoute of
             ComposeRoute ->
                 from model |> openDashboard
+
+            ContactListRoute ->
+                model ! [ fetchLatestThreads, subscribeToTextMessages () ] |> openContacts
 
             ContactThreadRoute contactId ->
                 model ! [ fetchLatestThreads ] |> openThread contactId

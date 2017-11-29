@@ -69,15 +69,29 @@ a:hover {
       color: $simple;
     }
 
-    a {
+    .nav-link {
       color: lighten($scuba, 25);
       text-decoration: none;
       padding-top: .6em;
 
       &:hover {
         color: lighten($scuba, 40);
+
+        &:after {
+          color: lighten($scuba, 25);
+        }
       }
 
+      &:after {
+        padding: 1em;
+        content: "|";
+      }
+
+      &:last-of-type {
+        &:after {
+          content: "";
+        }
+      }
     }
   }
 
@@ -234,6 +248,7 @@ a:hover {
 .suggestion {
   padding: .5em 1em;
   border-bottom: 1px solid white;
+  cursor: pointer;
 
   &:nth-child(even) {
     background-color: $simple;
@@ -247,15 +262,10 @@ a:hover {
     background-color: darken($simple, 4);
   }
 
-  .label {
-    cursor: default;
-  }
-
   .body {
     font-weight:400;
     color: $flair;
     display: inline-block;
-    cursor: pointer;
   }
 
   .actions {

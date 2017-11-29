@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -68,12 +70,20 @@ public class ContactController {
     }
 
     @GetMapping("/contacts")
-    public List<ContactResponse> search(@RequestParam String q, Principal principal) {
-        return contactRepository
-                .search(q)
-                .stream()
-                .map(ContactResponse::new)
-                .collect(Collectors.toList());
+    public List<ContactResponse> search(@RequestParam(required = false) String q, Principal principal) {
+        if (q != null) {
+            return contactRepository
+                    .search(q)
+                    .stream()
+                    .map(ContactResponse::new)
+                    .collect(Collectors.toList());
+        } else {
+            List<ContactResponse> contactResponses = new ArrayList<>();
+            contactRepository
+                    .findAll()
+                    .forEach(contact -> contactResponses.add(new ContactResponse(contact)));
+            return contactResponses;
+        }
     }
 
     @GetMapping("/groups/{groupId}/contacts")

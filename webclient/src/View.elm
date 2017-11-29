@@ -2,6 +2,7 @@ module View exposing (..)
 
 import Authentication.Login
 import Compose
+import ContactList
 import Html exposing (Html, text)
 import Messages exposing (Msg)
 import Models exposing (Model)
@@ -20,6 +21,9 @@ view model =
 
         ComposeRoute ->
             TextMessages.Dashboard.view model (Compose.view model)
+
+        ContactListRoute ->
+            TextMessages.Dashboard.view model (ContactList.view model)
 
         ContactThreadRoute contactId ->
             TextMessages.Dashboard.view model (ContactThread.view model)

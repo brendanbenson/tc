@@ -19,7 +19,8 @@ view model content =
         [ userMessages model
         , header []
             [ div [ class "header-main" ] [ h1 [ class "app-title" ] [ text "TextChat" ] ]
-            , a [ href "/logout", class "log-out" ] [ text "Log Out" ]
+            , a [ onClick ListContacts, class "nav-link" ] [ text "Manage Contacts" ]
+            , a [ href "/logout", class "nav-link" ] [ text "Log Out" ]
             ]
         , div [ class "dashboard" ]
             [ div [ class "latest-messages-container" ]
@@ -76,6 +77,7 @@ createContactModal model =
             [ input
                 [ type_ "text"
                 , placeholder "Name"
+                , id "create-contact-name"
                 , value model.createContactName
                 , onInput InputCreateContactName
                 ]

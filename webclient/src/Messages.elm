@@ -21,6 +21,10 @@ type
     | ReceiveMessages String
     | Connected Bool
       --
+      -- Contact Management
+    | ListContacts
+    | FetchedContacts (Result Http.Error (List Contact))
+      --
       -- Contact Threads
     | OpenContactThread ContactId
     | FetchedTextMessagesForContact (Result Http.Error (List TextMessage))
