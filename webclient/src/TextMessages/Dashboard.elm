@@ -34,14 +34,27 @@ view model content =
                     , h2 [ class "section-break" ] [ text "Recent" ]
                     ]
                 , div [ class "latest-messages-content" ]
-                    [ div [] (List.map (threadSummary model) (latestThreads model.messages))
-                    ]
+                    [ latestMessagesContent model ]
                 ]
             , content
             ]
         , modal model.createContactModalOpen (createContactModal model)
         , modal (not model.connectedToServer) (disconnectMessage)
         ]
+
+
+latestMessagesContent : Model -> Html Msg
+latestMessagesContent model =
+    let
+        theLatestThreads =
+            latestThreads model.messages
+    in
+        case List.length theLatestThreads of
+            0 ->
+                div [ class "thread-summary" ] [ text "No messages. Click \"New Message\" to send one." ]
+
+            _ ->
+                div [] (List.map (threadSummary model) (latestThreads model.messages))
 
 
 disconnectMessage : Html Msg
