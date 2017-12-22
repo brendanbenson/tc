@@ -16,7 +16,8 @@ Rails.application.routes.draw do
       get '/suggest-contacts', to: 'groups#suggest_contacts'
       get '/contacts', to: 'groups#contacts'
     end
+
+    post '/receive-sms', to: 'text_messages#receive'
   end
 
-  post '/receive-sms', to: 'text_messages#receive'
 end
