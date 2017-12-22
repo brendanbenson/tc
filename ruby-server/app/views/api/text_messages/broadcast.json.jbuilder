@@ -1,0 +1,2 @@
+json.textMessages text_messages, partial: 'api/text_messages/text_message', as: :text_message
+json.contacts contacts, partial: 'api/contacts/contact', as: :contact

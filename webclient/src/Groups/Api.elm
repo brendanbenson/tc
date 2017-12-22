@@ -14,7 +14,7 @@ search : ContactId -> String -> Cmd Msg
 search contactId q =
     let
         url =
-            "/contacts/" ++ (toString contactId) ++ "/suggest-groups?q=" ++ Http.encodeUri q
+            "/api/contacts/" ++ (toString contactId) ++ "/suggest-groups?q=" ++ Http.encodeUri q
 
         request =
             Http.get url decodeGroupList
@@ -26,7 +26,7 @@ suggestContactsForGroup : GroupId -> String -> Cmd Msg
 suggestContactsForGroup groupId q =
     let
         url =
-            "/groups/" ++ (toString groupId) ++ "/suggest-contacts?q=" ++ Http.encodeUri q
+            "/api/groups/" ++ (toString groupId) ++ "/suggest-contacts?q=" ++ Http.encodeUri q
 
         request =
             Http.get url decodeContactList
@@ -38,7 +38,7 @@ addToGroup : (Result Http.Error Group -> Msg) -> ContactId -> GroupId -> Cmd Msg
 addToGroup callback contactId groupId =
     let
         url =
-            "/contacts/" ++ (toString contactId) ++ "/groups"
+            "/api/contacts/" ++ (toString contactId) ++ "/groups"
 
         requestBody =
             jsonBody <| addToGroupRequest groupId
@@ -53,7 +53,7 @@ fetchGroup : (Result Http.Error Group -> Msg) -> GroupId -> Cmd Msg
 fetchGroup callback groupId =
     let
         url =
-            "/groups/" ++ (toString groupId)
+            "/api/groups/" ++ (toString groupId)
 
         request =
             Http.get url decodeGroup
@@ -65,7 +65,7 @@ deleteGroupMembership : (Result Http.Error Group -> Msg) -> ContactId -> GroupId
 deleteGroupMembership callback contactId groupId =
     let
         url =
-            "/contacts/" ++ (toString contactId) ++ "/groups/" ++ (toString groupId)
+            "/api/contacts/" ++ (toString contactId) ++ "/groups/" ++ (toString groupId)
 
         request =
             HttpHelpers.delete url emptyBody decodeGroup

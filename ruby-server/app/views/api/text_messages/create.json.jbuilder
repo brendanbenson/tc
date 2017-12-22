@@ -1,0 +1,1 @@
+json.partial! 'text_message', text_message: @text_message

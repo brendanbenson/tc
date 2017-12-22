@@ -14,7 +14,7 @@ fetchLatestThreads : Cmd Msg
 fetchLatestThreads =
     let
         url =
-            "/text-messages"
+            "/api/text-messages"
 
         request =
             Http.get url decodeAugmentedTextMessageResponse
@@ -26,7 +26,7 @@ fetchContacts : Cmd Msg
 fetchContacts =
     let
         url =
-            "/contacts"
+            "/api/contacts"
 
         request =
             Http.get url decodeContactList
@@ -38,7 +38,7 @@ fetchListForContact : ContactId -> Cmd Msg
 fetchListForContact contactId =
     let
         url =
-            "/contacts/" ++ (toString contactId) ++ "/text-messages"
+            "/api/contacts/" ++ (toString contactId) ++ "/text-messages"
 
         request =
             Http.get url decodeTextMessageList
@@ -50,7 +50,7 @@ fetchListForGroup : GroupId -> Cmd Msg
 fetchListForGroup groupId =
     let
         url =
-            "/groups/" ++ (toString groupId) ++ "/text-messages"
+            "/api/groups/" ++ (toString groupId) ++ "/text-messages"
 
         request =
             Http.get url decodeGroupTextMessageList
@@ -62,7 +62,7 @@ sendContactMessage : ContactId -> String -> (Result Error TextMessage -> Msg) ->
 sendContactMessage contactId body handler =
     let
         url =
-            "/contacts/" ++ (toString contactId) ++ "/text-messages"
+            "/api/contacts/" ++ (toString contactId) ++ "/text-messages"
 
         requestBody =
             createTextMessageRequest body |> jsonBody
@@ -77,7 +77,7 @@ sendGroupMessage : GroupId -> String -> (Result Error GroupTextMessage -> Msg) -
 sendGroupMessage groupId body handler =
     let
         url =
-            "/groups/" ++ (toString groupId) ++ "/text-messages"
+            "/api/groups/" ++ (toString groupId) ++ "/text-messages"
 
         requestBody =
             createTextMessageRequest body |> jsonBody

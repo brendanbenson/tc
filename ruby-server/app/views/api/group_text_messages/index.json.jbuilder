@@ -1,0 +1,1 @@
+json.array! @group_text_messages, partial: 'group_text_message', as: :group_text_message

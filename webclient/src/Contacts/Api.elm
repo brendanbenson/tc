@@ -13,7 +13,7 @@ search : String -> Cmd Msg
 search q =
     let
         url =
-            "/contacts?q=" ++ Http.encodeUri q
+            "/api/contacts?q=" ++ Http.encodeUri q
 
         request =
             Http.get url decodeContactList
@@ -25,7 +25,7 @@ fetchForGroup : GroupId -> Cmd Msg
 fetchForGroup groupId =
     let
         url =
-            "/groups/" ++ (toString groupId) ++ "/contacts"
+            "/api/groups/" ++ (toString groupId) ++ "/contacts"
 
         request =
             Http.get url decodeContactList
@@ -37,7 +37,7 @@ createContact : (Result Http.Error Contact -> Msg) -> String -> String -> Cmd Ms
 createContact callback label phoneNumber =
     let
         url =
-            "/contacts"
+            "/api/contacts"
 
         requestBody =
             jsonBody <| createContactRequest label phoneNumber
@@ -52,7 +52,7 @@ editContact : Contact -> Cmd Msg
 editContact contact =
     let
         url =
-            "/contacts"
+            "/api/contacts"
 
         requestBody =
             jsonBody <| editContactRequest contact

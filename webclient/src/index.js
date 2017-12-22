@@ -7,44 +7,48 @@ var mountNode = document.getElementById('main');
 
 var app = Elm.Main.embed(mountNode);
 
-require('./stomp');
-var SockJS = require('./sockjs');
+var ActionCable = require('actioncable');
 
-var socketUrl = '/realtime';
-var ws = new SockJS(socketUrl);
-var client = Stomp.over(ws);
 var socketConnected = false;
 
 app.ports.subscribeToTextMessages.subscribe(function () {
     if (!socketConnected) {
-        connectAndReconnect(onConnect);
+        connectAndReconnect();
     }
 });
 
-var onConnect = function () {
-    client.subscribe('/text-messages', function (textMessageResponse) {
-        app.ports.receiveTextMessages.send(textMessageResponse.body);
-    });
-};
+function connectAndReconnect() {
+    console.log('Connecting...');
 
-function connectAndReconnect(successCallback) {
     socketConnected = true;
-    ws = new SockJS(socketUrl);
-    client = Stomp.over(ws);
-    client.connect({}, function (frame) {
-        app.ports.connectedToTextMessages.send(true);
-        successCallback();
-    }, function () {
-        app.ports.connectedToTextMessages.send(false);
-        setTimeout(function () {
-            connectAndReconnect(successCallback);
-        }, 10000);
+
+    var cable = ActionCable.createConsumer('ws://localhost:3000/cable');
+
+    cable.subscriptions.create('TextMessagesChannel', {
+        received: function (data) {
+            app.ports.receiveTextMessages.send(JSON.stringify(data));
+        },
+
+        connected: function () {
+            console.log('Connected to the websocket');
+            app.ports.connectedToTextMessages.send(true);
+        },
+
+        disconnected: function () {
+            console.log('Disconnected');
+            socketConnected = false;
+            app.ports.connectedToTextMessages.send(false);
+        },
+
+        rejected: function () {
+            console.log('The server rejected the connection');
+        }
     });
 }
 
 var ding = require('./sounds/ding.mp3');
 
-app.ports.ding.subscribe(function() {
+app.ports.ding.subscribe(function () {
     var audio = new Audio(ding);
     audio.play();
 });

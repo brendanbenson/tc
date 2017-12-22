@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "actioncable": "^5.1.4",
     "css-loader": "^0.28.1",
     "elm-webpack-loader": "^4.3.1",
     "file-loader": "^0.11.1",
@@ -21,7 +22,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "client": "webpack-dev-server --port 3000 --host 0.0.0.0"
+    "client": "webpack-dev-server --port 3001 --host 0.0.0.0"
   },
   "devDependencies": {
     "eslint": "^3.19.0"

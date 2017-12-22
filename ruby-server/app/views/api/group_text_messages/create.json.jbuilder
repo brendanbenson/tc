@@ -1,0 +1,1 @@
+json.partial! 'group_text_message', group_text_message: @group_text_message

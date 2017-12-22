@@ -35,8 +35,7 @@ dependencies {
     compile('com.twilio.sdk:twilio:7.11.0')
     compile('org.springframework.boot:spring-boot-starter-websocket')
     compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.security.oauth:spring-security-oauth2')
-    compile('pl.allegro.tech.boot:handlebars-spring-boot-starter:0.2.15')
+    compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
