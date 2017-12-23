@@ -1,0 +1,93 @@
+input {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 300;
+  font-size: 1.1em;
+  color: $content;
+  display: block;
+  width: 100%;
+  border: 1px solid $simple;
+  margin: .5em 0;
+  padding: .5em;
+  box-sizing: border-box;
+
+  &::placeholder, &:disabled {
+    color: $simple-content;
+  }
+
+  &.error {
+    border-color: $flair;
+  }
+}
+
+button {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: .8em;
+  border-width: 0;
+  background-color: $flair;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 14px;
+  color: $simple;
+  cursor: pointer;
+  border: none;
+  border-radius: .5em;
+  font-weight: 300;
+  text-decoration: none;
+  transition: all 0.5s ease;
+
+  &:hover, &:focus {
+    background-color: darken($flair, 7);
+    text-decoration: none;
+    color: $simple;
+    box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.2);
+    transition: all 0.5s ease;
+  }
+
+  &:disabled {
+    background-color: lighten($flair, 15);
+  }
+
+  &.feature {
+    width: 100%;
+  }
+}
+
+*:focus {
+  outline: none;
+}
+
+.compose-field {
+  display: block;
+  background-color: $simple;
+  height: 2em;
+  border-radius: 5px;
+  margin: 1em;
+  padding: .4em 0 0 1em;
+  vertical-align: middle;
+  color: $simple-content;
+
+  &::before {
+    font-family: FontAwesome;
+    content: "\f044";
+  }
+
+  input {
+    display: inline-block;
+    background: none;
+    border: none;
+    margin: .15em .3em 0 .7em;
+    color: $content;
+    width: auto;
+    padding: 0;
+
+    &::placeholder {
+      color: $simple-content;
+      font-weight: 300;
+    }
+  }
+}
+
+.omni-search {
+  min-width: 25em;
+}

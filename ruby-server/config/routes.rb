@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   devise_for :users
-  root to: 'api/text_messages#index'
+  root to: "application#index"
 
   namespace :api, defaults: {format: :json} do
     resources :text_messages, only: [:index, :create], path: 'text-messages'
