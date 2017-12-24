@@ -3,7 +3,7 @@ module TextMessages.Dashboard exposing (..)
 import Contacts.Helpers exposing (getContact)
 import Contacts.ViewHelpers exposing (contactName)
 import Html exposing (Html, a, button, div, form, h1, h2, h3, header, i, input, label, span, text)
-import Html.Attributes exposing (class, disabled, href, id, placeholder, style, type_, value)
+import Html.Attributes exposing (attribute, class, disabled, href, id, placeholder, rel, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
@@ -20,7 +20,13 @@ view model content =
         , header []
             [ div [ class "header-main" ] [ h1 [ class "app-title" ] [ text "TextChat" ] ]
             , a [ onClick ListContacts, class "nav-link" ] [ text "Manage Contacts" ]
-            , a [ href "/logout", class "nav-link" ] [ text "Log Out" ]
+            , a
+                [ href "users/sign_out"
+                , class "nav-link"
+                , attribute "data-method" "delete"
+                , rel "nofollow"
+                ]
+                [ text "Log Out" ]
             ]
         , div [ class "dashboard" ]
             [ div [ class "latest-messages-container" ]
