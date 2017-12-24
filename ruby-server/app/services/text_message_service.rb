@@ -40,8 +40,8 @@ class TextMessageService
   end
 
   def self.twilio_client
-    account_sid = 'ACa14c8ca7319e9e69093cc7dce6b0fb87'
-    auth_token = 'af82f2a7708264f8ef875d3a54479eb7'
+    account_sid = ENV['TWILIO_ACCOUNT_SID']
+    auth_token = ENV['TWILIO_AUTH_TOKEN']
 
     # TODO: make this more dependency-injection-ish or abstracted
     Twilio::REST::Client.new account_sid, auth_token
