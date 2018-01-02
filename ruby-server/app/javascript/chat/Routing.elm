@@ -7,9 +7,9 @@ import UrlParser exposing (..)
 
 
 type Route
-    = LoginRoute
-    | ComposeRoute
+    = ComposeRoute
     | ContactListRoute
+    | PhoneNumberListRoute
     | ContactThreadRoute ContactId
     | GroupThreadRoute GroupId
     | NotFoundRoute
@@ -18,8 +18,8 @@ type Route
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map LoginRoute (s "login")
-        , map ContactListRoute (s "contacts")
+        [ map ContactListRoute (s "contacts")
+        , map PhoneNumberListRoute (s "phone-numbers")
         , map ContactThreadRoute (s "contacts" </> int)
         , map GroupThreadRoute (s "groups" </> int)
         , map ComposeRoute top
@@ -41,11 +41,11 @@ toUrl route =
     let
         hashPage =
             case route of
-                LoginRoute ->
-                    "/login"
-
                 ComposeRoute ->
                     "/"
+
+                PhoneNumberListRoute ->
+                    "/phone-numbers"
 
                 ContactListRoute ->
                     "/contacts"

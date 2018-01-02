@@ -1,6 +1,5 @@
 module Update exposing (..)
 
-import Authentication.Api exposing (authenticate)
 import Contacts.Api exposing (editContact)
 import Contacts.Helpers exposing (getContact)
 import Contacts.Models exposing (Contact, ContactId)
@@ -14,7 +13,7 @@ import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
 import Models exposing (Model, UserMessage(ErrorMessage, SuccessMessage), newContactThreadState, newGroupThreadState)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(ComposeRoute, ContactThreadRoute, ContactListRoute, GroupThreadRoute, LoginRoute, NotFoundRoute), newUrl, parseLocation, toUrl)
+import Routing exposing (Route(ComposeRoute, ContactListRoute, ContactThreadRoute, GroupThreadRoute, NotFoundRoute, PhoneNumberListRoute), newUrl, parseLocation, toUrl)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchContacts, fetchLatestThreads, fetchListForContact, fetchListForGroup, sendContactMessage, sendGroupMessage)
@@ -401,21 +400,8 @@ update msg model =
         GroupFetched (Err e) ->
             from model |> addHttpError e
 
-        InputUsername newUsername ->
-            { model | username = newUsername } ! []
-
-        InputPassword newPassword ->
-            { model | password = newPassword } ! []
-
-        SubmitLogin ->
-            { model | sendingAuth = True } ! [ authenticate model ]
-
-        SubmittedLogin (Ok authenticationResponse) ->
-            -- TODO: remove this
-            model ! []
-
-        SubmittedLogin (Err _) ->
-            from { model | authError = True, sendingAuth = False }
+        ListPhoneNumbers ->
+            model ! [ newUrl <| PhoneNumberListRoute ]
 
         UserMessageExpired ->
             from
@@ -436,6 +422,9 @@ update msg model =
                     ComposeRoute ->
                         from model |> updateRoute route |> openDashboard
 
+                    PhoneNumberListRoute ->
+                        from model |> updateRoute route
+
                     ContactListRoute ->
                         from model |> updateRoute route |> openContacts
 
@@ -444,9 +433,6 @@ update msg model =
 
                     GroupThreadRoute groupId ->
                         from model |> updateRoute route |> openGroupThread groupId
-
-                    LoginRoute ->
-                        from model |> updateRoute route
 
                     NotFoundRoute ->
                         from model |> updateRoute route

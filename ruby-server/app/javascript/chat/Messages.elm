@@ -1,6 +1,5 @@
 module Messages exposing (..)
 
-import Authentication.Models exposing (AuthenticationResponse)
 import Contacts.Models exposing (Contact, ContactId)
 import Groups.Models exposing (Group, GroupId)
 import Http
@@ -20,10 +19,6 @@ type
       -- Text messages
     | ReceiveMessages String
     | Connected Bool
-      --
-      -- Contact Management
-    | ListContacts
-    | FetchedContacts (Result Http.Error (List Contact))
       --
       -- Contact Threads
     | OpenContactThread ContactId
@@ -57,6 +52,8 @@ type
     | FetchedLatestThreads (Result Http.Error AugmentedTextMessageResponse)
       --
       -- Contact management
+    | ListContacts
+    | FetchedContacts (Result Http.Error (List Contact))
     | CreateContact String
     | ContactCreated (Result Http.Error Contact)
     | StartEditingContact String Contact
@@ -71,13 +68,10 @@ type
     | CreateFullContact String String
     | FullContactCreated (Result Http.Error Contact)
       --
+      -- Phone number management
+    | ListPhoneNumbers
+      --
       -- Util
     | OnLocationChange Location
     | NoOp
     | UserMessageExpired
-      --
-      -- Login (may get removed)
-    | InputUsername String
-    | InputPassword String
-    | SubmitLogin
-    | SubmittedLogin (Result Http.Error AuthenticationResponse)

@@ -1,9 +1,8 @@
 module View exposing (..)
 
-import Authentication.Login
 import Compose
 import ContactList
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
 import Messages exposing (Msg)
 import Models exposing (Model)
 import NotFound
@@ -16,11 +15,11 @@ import GroupThread
 view : Model -> Html Msg
 view model =
     case model.route of
-        LoginRoute ->
-            Authentication.Login.view model
-
         ComposeRoute ->
             TextMessages.Dashboard.view model (Compose.view model)
+
+        PhoneNumberListRoute ->
+            TextMessages.Dashboard.view model (div [] [])
 
         ContactListRoute ->
             TextMessages.Dashboard.view model (ContactList.view model)

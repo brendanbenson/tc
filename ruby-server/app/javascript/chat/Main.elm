@@ -74,6 +74,9 @@ init location =
             ComposeRoute ->
                 from model |> openDashboard
 
+            PhoneNumberListRoute ->
+                from model
+
             ContactListRoute ->
                 model ! [ fetchLatestThreads, subscribeToTextMessages () ] |> openContacts
 
@@ -82,9 +85,6 @@ init location =
 
             GroupThreadRoute groupId ->
                 model ! [ fetchLatestThreads ] |> openGroupThread groupId
-
-            LoginRoute ->
-                model ! []
 
             NotFoundRoute ->
                 model ! []

@@ -1,4 +1,4 @@
-import Elm from '../Main';
+import Elm from '../chat/Main';
 import ding from '../sounds/ding.mp3';
 
 document.addEventListener('DOMContentLoaded', () => {

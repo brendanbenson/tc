@@ -19,7 +19,8 @@ view model content =
         [ userMessages model
         , header []
             [ div [ class "header-main" ] [ h1 [ class "app-title" ] [ text "TextChat" ] ]
-            , a [ onClick ListContacts, class "nav-link" ] [ text "Manage Contacts" ]
+            , a [ onClick ListContacts, class "nav-link" ] [ text "Contacts" ]
+            , a [ onClick ListPhoneNumbers, class "nav-link" ] [ text "Phone Numbers" ]
             , a
                 [ href "users/sign_out"
                 , class "nav-link"

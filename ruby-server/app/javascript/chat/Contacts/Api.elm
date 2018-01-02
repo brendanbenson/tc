@@ -52,7 +52,7 @@ editContact : Contact -> Cmd Msg
 editContact contact =
     let
         url =
-            "/api/contacts"
+            "/api/contacts/" ++ (toString contact.id)
 
         requestBody =
             jsonBody <| editContactRequest contact

@@ -1,17 +1,24 @@
 class TextMessageService
   def self.send_text_message(text_message)
     ApplicationRecord.transaction do
-      from_phone_number = "+14194914157"
+      from_phone_number = '12109619091'
       from_contact = Contact.find_by!(phone_number: from_phone_number)
       text_message.from_contact = from_contact
       text_message.incoming = false
       text_message.save!
 
-      twilio_client.api.account.messages.create(
-          from: text_message.from_contact.phone_number,
+      response = client.send_message(
+          from: from_phone_number,
           to: text_message.to_contact.phone_number,
-          body: text_message.body
+          text: text_message.body
       )
+
+      if response['messages'][0]['status'] == '0'
+        puts "Sent message #{response['messages'][0]['message-id']}"
+      else
+        raise "Error: #{response['messages'][0]['error-text']}"
+      end
+
 
       text_message.update_attributes!(delivered_at: Time.now)
     end
@@ -39,11 +46,7 @@ class TextMessageService
     )
   end
 
-  def self.twilio_client
-    account_sid = ENV['TWILIO_ACCOUNT_SID']
-    auth_token = ENV['TWILIO_AUTH_TOKEN']
-
-    # TODO: make this more dependency-injection-ish or abstracted
-    Twilio::REST::Client.new account_sid, auth_token
+  def self.client
+    Nexmo::Client.new(key: ENV['NEXMO_KEY'], secret: ENV['NEXMO_SECRET'])
   end
 end

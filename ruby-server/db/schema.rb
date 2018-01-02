@@ -10,10 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171220134754) do
+ActiveRecord::Schema.define(version: 20171226152324) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "accounts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "contacts", force: :cascade do |t|
     t.text "phone_number", null: false
@@ -40,6 +45,14 @@ ActiveRecord::Schema.define(version: 20171220134754) do
     t.datetime "created_at", default: -> { "now()" }, null: false
   end
 
+  create_table "phone_numbers", force: :cascade do |t|
+    t.string "number"
+    t.bigint "account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_phone_numbers_on_account_id"
+  end
+
   create_table "text_messages", force: :cascade do |t|
     t.text "body", null: false
     t.datetime "created_at", default: -> { "now()" }, null: false
@@ -47,6 +60,15 @@ ActiveRecord::Schema.define(version: 20171220134754) do
     t.bigint "to_contact_id", null: false
     t.bigint "from_contact_id", null: false
     t.boolean "incoming", null: false
+  end
+
+  create_table "user_accounts", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_user_accounts_on_account_id"
+    t.index ["user_id"], name: "index_user_accounts_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|

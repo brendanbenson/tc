@@ -26,7 +26,7 @@ class Api::TextMessagesController < ApplicationController
 
   # TODO: add some security here so random people can't hit this endpoint
   def receive
-    text_message = TextMessageService.record_receipt(params["From"], params["To"], params["Body"])
+    text_message = TextMessageService.record_receipt(params["msisdn"], params["to"], params["text"])
     broadcast_text_messages [text_message]
   end
 end
