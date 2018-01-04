@@ -32,7 +32,10 @@ class TextMessageService
 
   def self.record_receipt(from_phone_number, to_phone_number, body)
     to_contact = Contact.find_by!(phone_number: to_phone_number)
-    from_contact = Contact.find_or_create_by!(account: to_contact.account, phone_number: from_phone_number)
+    from_contact = Contact.find_by(account: to_contact.account, phone_number: from_phone_number)
+    if from_contact.blank?
+      from_contact = Contact.create!(account: to_contact.account, phone_number: from_phone_number, label: "")
+    end
 
     TextMessage.create!(
         account: to_contact.account,

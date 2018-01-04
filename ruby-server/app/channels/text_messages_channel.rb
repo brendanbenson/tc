@@ -1,5 +1,5 @@
 class TextMessagesChannel < ApplicationCable::Channel
   def subscribed
-    stream_from "text_messages"
+    stream_for current_user.account
   end
 end
