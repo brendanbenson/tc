@@ -1,4 +1,5 @@
 class TextMessage < ApplicationRecord
+  belongs_to :account
   belongs_to :to_contact, class_name: "Contact", foreign_key: "to_contact_id"
   belongs_to :from_contact, class_name: "Contact", foreign_key: "from_contact_id"
 
@@ -6,7 +7,7 @@ class TextMessage < ApplicationRecord
     where(from_contact: contact).or(where(to_contact: contact))
   end
 
-  def self.latest_threads
+  def self.latest_threads(account)
     sql = <<SQL
 SELECT m1.*
 FROM
@@ -15,8 +16,9 @@ FROM
     ON (m1.to_contact_id = m2.to_contact_id
         AND m1.created_at < m2.created_at)
 WHERE m2.id IS NULL
+AND m1.account_id = :account_id
 ORDER BY m1.created_at DESC
 SQL
-    find_by_sql(sql)
+    find_by_sql [sql, account_id: account.id]
   end
 end

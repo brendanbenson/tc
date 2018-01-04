@@ -5,18 +5,24 @@ class Api::TextMessagesController < ApplicationController
 
   def index
     if params[:contact_id].present?
-      contact = Contact.find(params[:contact_id])
-      @text_messages = TextMessage.for_to_or_from_contact(contact).order(created_at: :desc)
+      contact = Contact.where(account: current_account).find(params[:contact_id])
+      @text_messages = TextMessage
+                           .where(account: current_account)
+                           .for_to_or_from_contact(contact)
+                           .order(created_at: :desc)
       return render :contact_index
     end
 
-    @text_messages = TextMessage.includes(:to_contact, :from_contact).latest_threads
+    @text_messages = TextMessage
+                         .includes(:to_contact, :from_contact)
+                         .latest_threads(current_account)
     @contacts = @text_messages.map(&:to_contact) + @text_messages.map(&:from_contact)
   end
 
   def create
     to_contact = Contact.find(params[:contact_id])
     @text_message = TextMessage.new(
+        account: current_account,
         body: params[:body],
         to_contact: to_contact,
         from_contact: current_contact

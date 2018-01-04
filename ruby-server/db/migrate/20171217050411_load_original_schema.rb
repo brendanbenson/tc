@@ -20,9 +20,7 @@ create table contacts
   id bigserial not null
     constraint contacts_pkey
     primary key,
-  phone_number text not null
-    constraint contacts_phone_number_key
-    unique,
+  phone_number text not null,
   label text not null,
   created_at timestamp default now() not null
 )

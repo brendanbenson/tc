@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180104000420) do
+ActiveRecord::Schema.define(version: 20180104012413) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20180104000420) do
     t.text "phone_number", null: false
     t.text "label", null: false
     t.datetime "created_at", default: -> { "now()" }, null: false
-    t.index ["phone_number"], name: "contacts_phone_number_key", unique: true
+    t.integer "account_id", null: false
   end
 
   create_table "contacts_groups", force: :cascade do |t|
@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(version: 20180104000420) do
   create_table "groups", force: :cascade do |t|
     t.text "label", null: false
     t.datetime "created_at", default: -> { "now()" }, null: false
+    t.integer "account_id", null: false
   end
 
   create_table "phone_numbers", force: :cascade do |t|
@@ -60,6 +61,7 @@ ActiveRecord::Schema.define(version: 20180104000420) do
     t.bigint "to_contact_id", null: false
     t.bigint "from_contact_id", null: false
     t.boolean "incoming", null: false
+    t.integer "account_id"
   end
 
   create_table "users", force: :cascade do |t|

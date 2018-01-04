@@ -1,4 +1,5 @@
 class Group < ApplicationRecord
+  belongs_to :account
   has_many :group_text_messages
   has_many :contact_groups
   has_many :contacts, through: :contact_groups
