@@ -1,14 +1,11 @@
 class TextMessageService
   def self.send_text_message(text_message)
     ApplicationRecord.transaction do
-      from_phone_number = '12109619091'
-      from_contact = Contact.find_by!(phone_number: from_phone_number)
-      text_message.from_contact = from_contact
       text_message.incoming = false
       text_message.save!
 
       response = client.send_message(
-          from: from_phone_number,
+          from: text_message.from_contact.phone_number,
           to: text_message.to_contact.phone_number,
           text: text_message.body
       )

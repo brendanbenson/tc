@@ -68,9 +68,6 @@ type
     | CreateFullContact String String
     | FullContactCreated (Result Http.Error Contact)
       --
-      -- Phone number management
-    | ListPhoneNumbers
-      --
       -- Util
     | OnLocationChange Location
     | NoOp

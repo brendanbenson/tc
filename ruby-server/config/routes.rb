@@ -17,11 +17,10 @@ Rails.application.routes.draw do
       get '/contacts', to: 'groups#contacts'
     end
 
-    resources :phone_numbers, path: 'phone-numbers', only: [] do
-      get '/search'
-    end
+    get '/phone-numbers/search', to: 'phone_numbers#search'
 
     post '/receive-sms', to: 'text_messages#receive'
   end
 
+  resources :phone_numbers, only: [:new, :create]
 end

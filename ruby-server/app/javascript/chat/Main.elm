@@ -74,9 +74,6 @@ init location =
             ComposeRoute ->
                 from model |> openDashboard
 
-            PhoneNumberListRoute ->
-                from model
-
             ContactListRoute ->
                 model ! [ fetchLatestThreads, subscribeToTextMessages () ] |> openContacts
 

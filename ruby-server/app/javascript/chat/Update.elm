@@ -13,7 +13,7 @@ import Json.Decode exposing (decodeString)
 import Messages exposing (Msg(..))
 import Models exposing (Model, UserMessage(ErrorMessage, SuccessMessage), newContactThreadState, newGroupThreadState)
 import Ports exposing (subscribeToTextMessages)
-import Routing exposing (Route(ComposeRoute, ContactListRoute, ContactThreadRoute, GroupThreadRoute, NotFoundRoute, PhoneNumberListRoute), newUrl, parseLocation, toUrl)
+import Routing exposing (Route(ComposeRoute, ContactListRoute, ContactThreadRoute, GroupThreadRoute, NotFoundRoute), newUrl, parseLocation, toUrl)
 import String exposing (isEmpty)
 import TaskUtils exposing (delay)
 import TextMessages.Api exposing (fetchContacts, fetchLatestThreads, fetchListForContact, fetchListForGroup, sendContactMessage, sendGroupMessage)
@@ -400,9 +400,6 @@ update msg model =
         GroupFetched (Err e) ->
             from model |> addHttpError e
 
-        ListPhoneNumbers ->
-            model ! [ newUrl <| PhoneNumberListRoute ]
-
         UserMessageExpired ->
             from
                 { model
@@ -421,9 +418,6 @@ update msg model =
                 case route of
                     ComposeRoute ->
                         from model |> updateRoute route |> openDashboard
-
-                    PhoneNumberListRoute ->
-                        from model |> updateRoute route
 
                     ContactListRoute ->
                         from model |> updateRoute route |> openContacts

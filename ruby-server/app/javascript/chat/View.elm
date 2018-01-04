@@ -18,9 +18,6 @@ view model =
         ComposeRoute ->
             TextMessages.Dashboard.view model (Compose.view model)
 
-        PhoneNumberListRoute ->
-            TextMessages.Dashboard.view model (div [] [])
-
         ContactListRoute ->
             TextMessages.Dashboard.view model (ContactList.view model)
 

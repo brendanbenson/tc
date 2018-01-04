@@ -18,7 +18,8 @@ class Api::TextMessagesController < ApplicationController
     to_contact = Contact.find(params[:contact_id])
     @text_message = TextMessage.new(
         body: params[:body],
-        to_contact: to_contact
+        to_contact: to_contact,
+        from_contact: current_contact
     )
     TextMessageService.send_text_message(@text_message)
     broadcast_text_messages [@text_message]

@@ -11,6 +11,7 @@ import Html.Events exposing (..)
 import HtmlUtils exposing (spin)
 import Messages exposing (Msg(..))
 import Models exposing (Model, ContactThreadState)
+import StringUtils exposing (formatPhoneNumber)
 import TextMessages.Helpers exposing (messagesForContactId)
 import TextMessages.Models exposing (TextMessage, bodyMatchesString)
 
@@ -168,7 +169,7 @@ contactDetails model contact =
                         [ onClick <| StartEditingContact "edit-contact-phone-number" contact
                         , class "hover-edit"
                         ]
-                        [ text contact.phoneNumber ]
+                        [ text <| formatPhoneNumber contact.phoneNumber ]
                     ]
 
 

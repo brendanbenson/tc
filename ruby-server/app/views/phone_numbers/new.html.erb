@@ -1,0 +1,36 @@
+<h1>Select a phone number</h1>
+<%= form_tag(new_phone_number_path, method: "get") do %>
+  <%= label_tag(:q, "Enter your 3-digit area code:") %>
+  <%= text_field_tag(:q) %>
+  <%= submit_tag("Search") %>
+<% end %>
+
+<% if @results.present? %>
+  <table>
+    <thead>
+      <tr>
+        <th>
+          Phone Number
+        </th>
+        <th>
+          Actions
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @results['numbers'].each do |number| %>
+        <tr>
+          <td>
+            <%= number_to_phone number['msisdn'][1..-1], area_code: true %>
+          </td>
+          <td>
+            <%= form_tag(phone_numbers_path) do %>
+              <%= hidden_field_tag('number', number['msisdn']) %>
+              <%= submit_tag("Select") %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -3,6 +3,17 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!
 
+  def index
+    if current_account.blank?
+      current_user.create_account!
+      current_user.save!
+    end
+
+    if current_account.phone_number.blank?
+      redirect_to new_phone_number_path
+    end
+  end
+
   def broadcast_text_messages(text_messages)
     broadcast(
         "text_messages",
@@ -14,5 +25,13 @@ class ApplicationController < ActionController::Base
             }
         )
     )
+  end
+
+  def current_account
+    current_user.account
+  end
+
+  def current_contact
+    Contact.find_by!(phone_number: current_account.phone_number.number)
   end
 end

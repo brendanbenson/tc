@@ -9,7 +9,6 @@ import UrlParser exposing (..)
 type Route
     = ComposeRoute
     | ContactListRoute
-    | PhoneNumberListRoute
     | ContactThreadRoute ContactId
     | GroupThreadRoute GroupId
     | NotFoundRoute
@@ -19,7 +18,6 @@ matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map ContactListRoute (s "contacts")
-        , map PhoneNumberListRoute (s "phone-numbers")
         , map ContactThreadRoute (s "contacts" </> int)
         , map GroupThreadRoute (s "groups" </> int)
         , map ComposeRoute top
@@ -43,9 +41,6 @@ toUrl route =
             case route of
                 ComposeRoute ->
                     "/"
-
-                PhoneNumberListRoute ->
-                    "/phone-numbers"
 
                 ContactListRoute ->
                     "/contacts"
