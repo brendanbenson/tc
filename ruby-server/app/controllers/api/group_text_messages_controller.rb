@@ -5,7 +5,12 @@ class Api::GroupTextMessagesController < ApplicationController
 
   def create
     group = Group.find(params[:group_id])
-    @group_text_message = GroupTextMessage.create!(body: params[:body], group: group)
+    @group_text_message = GroupTextMessage.create!(
+        user: current_user,
+        account: current_account,
+        body: params[:body],
+        group: group
+    )
 
     text_messages = TextMessageService.send_group_text_message(@group_text_message)
 

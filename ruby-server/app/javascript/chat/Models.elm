@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Groups.Models exposing (Group, GroupId)
 import Routing exposing (Route)
 import TextMessages.Models exposing (GroupTextMessage, TextMessage)
+import Users.Models exposing (User)
 
 
 type alias Model =
@@ -34,9 +35,8 @@ type alias Model =
     , groupContacts : List ContactId
     , loadingContactMessages : Bool
     , loadingGroupMessages : Bool
+    , users : List User
     , route : Route
-    , username : String
-    , password : String
     , authError : Bool
     , sendingAuth : Bool
     , userMessages : List UserMessage

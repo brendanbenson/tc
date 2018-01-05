@@ -1,5 +1,6 @@
 module Messages exposing (..)
 
+import Accounts.Decoders exposing (AccountResponse)
 import Contacts.Models exposing (Contact, ContactId)
 import Groups.Models exposing (Group, GroupId)
 import Http
@@ -67,6 +68,9 @@ type
     | InputCreateContactPhoneNumber String
     | CreateFullContact String String
     | FullContactCreated (Result Http.Error Contact)
+      --
+      -- Accounts
+    | FetchedAccount (Result Http.Error AccountResponse)
       --
       -- Util
     | OnLocationChange Location

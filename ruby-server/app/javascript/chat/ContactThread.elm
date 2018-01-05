@@ -9,11 +9,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import HtmlUtils exposing (spin)
+import ListUtils exposing (lastElem)
 import Messages exposing (Msg(..))
 import Models exposing (Model, ContactThreadState)
 import StringUtils exposing (formatPhoneNumber)
 import TextMessages.Helpers exposing (messagesForContactId)
 import TextMessages.Models exposing (TextMessage, bodyMatchesString)
+import Users.Helpers exposing (getUser)
 
 
 view : Model -> Html Msg
@@ -21,10 +23,14 @@ view model =
     let
         contact =
             Contacts.Helpers.getContact model.contacts model.contactThreadState.to
+
+        textMessages =
+            messagesForContactId contact.id model.messages
     in
         div [ class "thread-container" ]
             [ div [ class "thread-title" ]
                 [ h2 [] [ text <| contactName contact ]
+                , threadStatus model textMessages
                 ]
             , div [ class "thread-content" ]
                 [ div [ class "thread-messages-pane" ]
@@ -230,3 +236,37 @@ addToGroupSuggestion model contact groupId =
             [ span [ class "label" ] [ text "Add to: " ]
             , span [ class "body" ] [ text group.label ]
             ]
+
+
+threadStatus : Model -> List TextMessage -> Html Msg
+threadStatus model textMessages =
+    let
+        lastMessage =
+            lastElem textMessages
+    in
+        case lastMessage of
+            Just textMessage ->
+                case textMessage.userId of
+                    Just userId ->
+                        agentHasResponded model userId
+
+                    Nothing ->
+                        waitingForResponse
+
+            Nothing ->
+                span [] []
+
+
+agentHasResponded : Model -> Int -> Html Msg
+agentHasResponded model userId =
+    case getUser model userId of
+        Just user ->
+            text <| user.email ++ " has responded"
+
+        Nothing ->
+            text "An agent has responded"
+
+
+waitingForResponse : Html Msg
+waitingForResponse =
+    text "Waiting for a response"

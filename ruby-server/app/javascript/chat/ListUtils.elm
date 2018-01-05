@@ -9,3 +9,8 @@ addIfNotExists a l =
         l
     else
         a :: l
+
+
+lastElem : List a -> Maybe a
+lastElem =
+    List.foldl (Just >> always) Nothing

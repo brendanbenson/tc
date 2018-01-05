@@ -3,6 +3,7 @@ module TextMessages.Models exposing (..)
 import Contacts.Models exposing (Contact, ContactId)
 import Groups.Models exposing (Group)
 import String exposing (contains, toLower)
+import Users.Models exposing (UserId)
 
 
 type alias TextMessage =
@@ -11,6 +12,7 @@ type alias TextMessage =
     , incoming : Bool
     , toContactId : ContactId
     , fromContactId : ContactId
+    , userId : Maybe UserId
     }
 
 

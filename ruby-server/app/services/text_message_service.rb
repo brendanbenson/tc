@@ -27,7 +27,15 @@ class TextMessageService
     group_text_message
         .group
         .contacts
-        .map { |c| send_text_message(TextMessage.new(to_contact: c, body: group_text_message.body)) }
+        .map do |c|
+          text_message = TextMessage.new(
+              user: group_text_message.user,
+              account: group_text_message.account,
+              to_contact: c,
+              body: group_text_message.body
+          )
+          send_text_message(text_message)
+        end
   end
 
   def self.record_receipt(from_phone_number, to_phone_number, body)

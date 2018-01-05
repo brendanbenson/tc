@@ -400,6 +400,13 @@ update msg model =
         GroupFetched (Err e) ->
             from model |> addHttpError e
 
+        -- TODO
+        FetchedAccount (Ok accountResponse) ->
+            from { model | users = accountResponse.users }
+
+        FetchedAccount (Err e) ->
+            from model |> addHttpError e
+
         UserMessageExpired ->
             from
                 { model

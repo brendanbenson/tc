@@ -1,5 +1,6 @@
 class TextMessage < ApplicationRecord
   belongs_to :account
+  belongs_to :user, optional: true
   belongs_to :to_contact, class_name: "Contact", foreign_key: "to_contact_id"
   belongs_to :from_contact, class_name: "Contact", foreign_key: "from_contact_id"
 

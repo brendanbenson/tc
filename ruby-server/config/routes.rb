@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   root to: "application#index"
 
   namespace :api, defaults: {format: :json} do
+    resource :account, only: :show
     resources :text_messages, only: [:index, :create], path: 'text-messages'
     resources :contacts, only: [:index, :create, :update] do
       resources :text_messages, path: 'text-messages'

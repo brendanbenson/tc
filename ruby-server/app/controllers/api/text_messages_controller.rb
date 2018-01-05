@@ -23,6 +23,7 @@ class Api::TextMessagesController < ApplicationController
     to_contact = Contact.find(params[:contact_id])
     @text_message = TextMessage.new(
         account: current_account,
+        user: current_user,
         body: params[:body],
         to_contact: to_contact,
         from_contact: current_contact

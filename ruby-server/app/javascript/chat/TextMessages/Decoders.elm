@@ -20,6 +20,7 @@ decodeTextMessage =
         |> required "incoming" bool
         |> required "toContactId" int
         |> required "fromContactId" int
+        |> required "user_id" (maybe int)
 
 
 decodeGroupTextMessageList : Decoder (List GroupTextMessage)

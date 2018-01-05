@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Accounts.Update exposing (fetchAccount)
 import Contacts.Models exposing (emptyContact)
 import Dict
 import Messages exposing (Msg(..))
@@ -51,8 +52,7 @@ initialModel route =
     , createContactName = ""
     , createContactPhoneNumber = ""
     , creatingFullContact = False
-    , username = ""
-    , password = ""
+    , users = []
     , authError = False
     , sendingAuth = False
     , route = route
@@ -72,16 +72,16 @@ init location =
     in
         case currentRoute of
             ComposeRoute ->
-                from model |> openDashboard
+                from model |> openDashboard |> fetchAccount
 
             ContactListRoute ->
-                model ! [ fetchLatestThreads, subscribeToTextMessages () ] |> openContacts
+                model ! [ fetchLatestThreads, subscribeToTextMessages () ] |> openContacts |> fetchAccount
 
             ContactThreadRoute contactId ->
-                model ! [ fetchLatestThreads ] |> openThread contactId
+                model ! [ fetchLatestThreads ] |> openThread contactId |> fetchAccount
 
             GroupThreadRoute groupId ->
-                model ! [ fetchLatestThreads ] |> openGroupThread groupId
+                model ! [ fetchLatestThreads ] |> openGroupThread groupId |> fetchAccount
 
             NotFoundRoute ->
                 model ! []
