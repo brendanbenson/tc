@@ -1,2 +1,0 @@
-ALTER TABLE text_messages
-  ADD COLUMN incoming BOOLEAN NOT NULL;
