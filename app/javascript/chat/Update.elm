@@ -267,6 +267,7 @@ update msg model =
         SentMessage contactThreadState (Err e) ->
             from { model | contactThreadState = { contactThreadState | sendingMessage = False } }
                 |> focus "message-input"
+                |> addHttpError e
 
         SendGroupMessage groupThreadState ->
             { model | groupThreadState = { groupThreadState | sendingMessage = True } }
@@ -400,7 +401,6 @@ update msg model =
         GroupFetched (Err e) ->
             from model |> addHttpError e
 
-        -- TODO
         FetchedAccount (Ok accountResponse) ->
             from { model | users = accountResponse.users }
 
@@ -546,12 +546,13 @@ addHttpError e ( model, cmd ) =
             ( model, cmd ) |> addStringError "An network error occurred. Please check your connection and try again."
 
         BadStatus response ->
-            case decodeString Validation.Decoders.decodeValidationErrors response.body of
+            (case decodeString Validation.Decoders.decodeValidationErrors response.body of
                 Ok validationErrors ->
                     List.foldr addStringError ( model, cmd ) (Validation.Helpers.allErrorDescriptions validationErrors)
 
                 Err e ->
                     Debug.log "Could not parse errors" (( model, cmd ) |> addStringError "Action failed. Please try again.")
+            )
 
         BadPayload errorMessage response ->
             Debug.log errorMessage (( model, cmd ) |> addStringError "An error occurred. Please try again.")

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180105012333) do
+ActiveRecord::Schema.define(version: 20180108005814) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 20180105012333) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "plan_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -56,6 +57,13 @@ ActiveRecord::Schema.define(version: 20180105012333) do
     t.index ["account_id"], name: "index_phone_numbers_on_account_id"
   end
 
+  create_table "plans", force: :cascade do |t|
+    t.string "slug"
+    t.integer "conversation_messages"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "text_messages", force: :cascade do |t|
     t.text "body", null: false
     t.datetime "created_at", default: -> { "now()" }, null: false
@@ -81,6 +89,7 @@ ActiveRecord::Schema.define(version: 20180105012333) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "account_id"
+    t.string "name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

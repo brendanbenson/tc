@@ -1,5 +1,15 @@
 class TextMessageService
   def self.send_text_message(text_message)
+    errors = Validation::Errors.new
+
+    if !text_message.account.can_send_text_message?
+      errors.add_global_error(Validation::GlobalError.new(:message_limit_exceeded))
+    end
+
+    if errors.has_errors?
+      raise Validation::Error.new(errors)
+    end
+
     ApplicationRecord.transaction do
       text_message.incoming = false
       text_message.save!

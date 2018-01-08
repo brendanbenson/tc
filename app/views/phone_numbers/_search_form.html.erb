@@ -1,0 +1,5 @@
+<%= form_tag(new_phone_number_path, method: "get") do %>
+  <%= label_tag(:q, "New phone number: ") %>
+  <%= text_field_tag(:q, params[:q], placeholder: "Enter area code") %>
+  <%= submit_tag("Search") %>
+<% end %>

@@ -48,6 +48,7 @@ view model =
                                     , onInput (InputThreadMessage model.contactThreadState)
                                     , value model.contactThreadState.draftMessage
                                     , disabled model.contactThreadState.sendingMessage
+                                    , autocomplete False
                                     ]
                                     []
                                 ]
@@ -261,12 +262,21 @@ agentHasResponded : Model -> Int -> Html Msg
 agentHasResponded model userId =
     case getUser model userId of
         Just user ->
-            text <| user.email ++ " has responded"
+            span [ class "success-message" ]
+                [ span [ class "fa fa-check" ] []
+                , span [] [ text <| " " ++ user.name ++ " has responded" ]
+                ]
 
         Nothing ->
-            text "An agent has responded"
+            span [ class "success-message" ]
+                [ span [ class "fa fa-check" ] []
+                , span [] [ text "An agent has responded" ]
+                ]
 
 
 waitingForResponse : Html Msg
 waitingForResponse =
-    text "Waiting for a response"
+    span [ class "pending-message" ]
+        [ span [ class "fa fa-warning" ] []
+        , span [] [ text " Waiting for a response" ]
+        ]

@@ -1,0 +1,21 @@
+<h1>Choose a plan</h1>
+
+<%= form_tag(plans_path) do %>
+  <%= hidden_field_tag('slug', 'free') %>
+  <%= submit_tag("Free plan") %>
+<% end %>
+
+<%= form_tag(plans_path) do %>
+  <%= hidden_field_tag('slug', 'limited') %>
+  <%= submit_tag("Limited plan") %>
+<% end %>
+
+<%= form_tag(plans_path) do %>
+  <%= hidden_field_tag('slug', 'standard') %>
+  <%= submit_tag("Standard plan") %>
+<% end %>
+
+<%= form_tag(plans_path) do %>
+  <%= hidden_field_tag('slug', 'pro') %>
+  <%= submit_tag("Professional plan") %>
+<% end %>

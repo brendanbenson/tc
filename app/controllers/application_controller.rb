@@ -3,10 +3,20 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!
 
+  rescue_from Validation::Error, :with => :render_validation_errors
+
+  def render_validation_errors(exception)
+    render json: exception.errors.to_json, status: 400
+  end
+
   def index
     if current_account.blank?
       current_user.create_account!
       current_user.save!
+    end
+
+    if current_account.plan.blank?
+      redirect_to plans_path
     end
 
     if current_account.phone_number.blank?

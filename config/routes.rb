@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
-  devise_for :users
   root to: "application#index"
+
+  devise_for :users, controllers: {
+      sessions: 'users/sessions',
+      registrations: 'users/registrations'
+  }
 
   namespace :api, defaults: {format: :json} do
     resource :account, only: :show
@@ -18,10 +22,10 @@ Rails.application.routes.draw do
       get '/contacts', to: 'groups#contacts'
     end
 
-    get '/phone-numbers/search', to: 'phone_numbers#search'
-
     post '/receive-sms', to: 'text_messages#receive'
   end
 
-  resources :phone_numbers, only: [:new, :create]
+  resources :phone_numbers, path: 'phone-numbers'
+  get '/plans', to: 'plans#browse'
+  post '/plans', to: 'plans#choose'
 end

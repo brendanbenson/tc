@@ -4,6 +4,8 @@ class TextMessage < ApplicationRecord
   belongs_to :to_contact, class_name: "Contact", foreign_key: "to_contact_id"
   belongs_to :from_contact, class_name: "Contact", foreign_key: "from_contact_id"
 
+  scope :within_this_month, -> { where(created_at: DateTime.now.beginning_of_month..DateTime.now.end_of_month) }
+
   def self.for_to_or_from_contact(contact)
     where(from_contact: contact).or(where(to_contact: contact))
   end

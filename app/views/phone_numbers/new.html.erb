@@ -1,9 +1,6 @@
 <h1>Select a phone number</h1>
-<%= form_tag(new_phone_number_path, method: "get") do %>
-  <%= label_tag(:q, "Enter your 3-digit area code:") %>
-  <%= text_field_tag(:q) %>
-  <%= submit_tag("Search") %>
-<% end %>
+
+<%= render 'search_form' %>
 
 <% if @results.present? %>
   <table>

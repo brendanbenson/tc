@@ -8,8 +8,8 @@ import Validation.Models exposing (FieldError, GlobalError, ValidationErrors)
 decodeValidationErrors : Decoder ValidationErrors
 decodeValidationErrors =
     decode ValidationErrors
-        |> required "fieldErrors" (list decodeFieldError)
-        |> required "globalErrors" (list decodeGlobalError)
+        |> required "field_errors" (list decodeFieldError)
+        |> required "global_errors" (list decodeGlobalError)
 
 
 decodeFieldError : Decoder FieldError
@@ -17,7 +17,7 @@ decodeFieldError =
     decode FieldError
         |> required "field" string
         |> required "code" string
-        |> required "rejectedValue" string
+        |> required "rejected_value" string
 
 
 decodeGlobalError : Decoder GlobalError

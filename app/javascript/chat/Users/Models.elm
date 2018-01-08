@@ -8,4 +8,5 @@ type alias UserId =
 type alias User =
     { id : Int
     , email : String
+    , name : String
     }

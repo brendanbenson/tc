@@ -10,3 +10,4 @@ decodeUser =
     decode User
         |> required "id" int
         |> required "email" string
+        |> required "name" string
